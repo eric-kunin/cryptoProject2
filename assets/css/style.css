@@ -172,3 +172,7 @@ input:checked + .slider:before {
 .align-items-center {
     align-items: center;
 }
+/* .navbar {
+    width: 100%;
+    margin: 0 auto;
+} */
