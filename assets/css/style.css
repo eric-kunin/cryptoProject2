@@ -172,7 +172,22 @@ input:checked + .slider:before {
 .align-items-center {
     align-items: center;
 }
-/* .navbar {
-    width: 100%;
-    margin: 0 auto;
-} */
+
+/* Responsive navbar adjustments */
+@media screen and (max-width: 768px) {
+    .navbar .container-fluid {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .navbar .nav-pills {
+        width: 100%;
+    }
+    .navbar .nav-pills .nav-item {
+        width: 100%;
+    }
+    .navbar .form-control,
+    .navbar .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
