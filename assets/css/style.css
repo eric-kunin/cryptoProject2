@@ -201,3 +201,53 @@ input:checked + .slider:before {
     color: black;
     font-family: "Audiowide", sans-serif;
 }
+/* this is css code if I want to make width button of "more info" */
+/* this is backup code css for "more info" */
+/* .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .left-content {
+        display: flex;
+        align-items: center;
+    }
+    .left-content img {
+        margin-right: 10px;
+    }
+    .switch {
+        margin-left: auto;
+    } */
+    .card {
+        /* background-color: #7B1FA2; Dark purple background */
+        /* color: #FFFFFF; White text color */
+        border-color: #b695c0;
+        /* original code of box shadow */
+        /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); */
+        /* testing box shadow for card */
+        box-shadow: 18px 18px 18px rgba(0, 0, 0, 0.2);
+      }
+      
+      .btn-primary {
+        background-color: #512DA8; /* Darker purple button color */
+        border-color: #512DA8;
+        color: #FFFFFF;
+        /* text-transform: capitalize; */
+      }
+      
+      .btn-primary:hover {
+        background-color: #4527A0; /* Darker purple button hover color */
+        border-color: #4527A0;
+      }
+      
+      .slider {
+        background-color: #d5badb; /* Light gray switch color when off */
+      }
+      
+      .slider:before {
+        background-color: #FFFFFF; /* White switch knob color */
+      }
+      
+      input:checked + .slider {
+        background-color: #7B1FA2; /* Dark purple switch color when checked */
+      }
