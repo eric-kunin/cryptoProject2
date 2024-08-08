@@ -1,103 +1,112 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const coinContainer = document.getElementById('coin-container');
-    const cache = {};
-    
-    fetch('https://api.coingecko.com/api/v3/coins/list')
-        .then(response => response.json())
-        .then(data => {
-            const coins = data.slice(0, 100);
-            coins.forEach(coin => {
-                const coinCard = createCoinCard(coin);
-                coinContainer.appendChild(coinCard);
+$(document).ready(function () {
+    const apiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=usd";
+    const coinDetailUrl = "https://api.coingecko.com/api/v3/coins/";
+    const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
+
+    // Function to fetch and display coins
+    function loadCoins() {
+        $.ajax({
+            url: apiUrl,
+            type: 'GET',
+            success: function (data) {
+                displayCoins(data.slice(0, 100)); // Only display the first 100 coins
+            },
+            error: function (error) {
+                console.error("Error fetching coins: ", error);
+            }
+        });
+    }
+
+    // Function to display coins in the UI
+    function displayCoins(coins) {
+        const coinContainer = $('.main .row');
+        coinContainer.empty(); // Clear existing content
+        coins.forEach(coin => {
+            const coinCard = `
+                <div class="col-md-3">
+                    <div class="card" style="width:100%">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="left-content d-flex align-items-center">
+                                    <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px; margin-right: 10px;">
+                                    <div>
+                                        <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
+                                        <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
+                                    More Info
+                                </button>
+                                <div class="more-info-content mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            coinContainer.append(coinCard);
+        });
+
+        // Attach event listeners to "More Info" buttons
+        $('.more-info-btn').on('click', function () {
+            const coinId = $(this).data('coin-id');
+            const infoContent = $(this).next('.more-info-content');
+            const cachedData = localStorage.getItem(coinId);
+            const now = new Date().getTime();
+
+            // Check if data is cached and still valid
+            if (cachedData) {
+                const cachedObject = JSON.parse(cachedData);
+                if (now - cachedObject.timestamp < cacheDuration) {
+                    displayCoinDetails(infoContent, cachedObject.data);
+                    return;
+                }
+            }
+
+            // If no valid cache, fetch from API
+            $(this).html(`More Info <span class="spinner-border spinner-border-sm"></span>`);
+
+            $.ajax({
+                url: `${coinDetailUrl}${coinId}`,
+                type: 'GET',
+                success: function (data) {
+                    const coinDetails = {
+                        timestamp: now,
+                        data: data
+                    };
+                    localStorage.setItem(coinId, JSON.stringify(coinDetails));
+                    displayCoinDetails(infoContent, data);
+                    $(`[data-coin-id="${coinId}"]`).text('More Info');
+                },
+                error: function (error) {
+                    console.error("Error fetching coin details: ", error);
+                }
             });
-        })
-        .catch(error => console.error('Error fetching coin list:', error));
-
-    function createCoinCard(coin) {
-        const col = document.createElement('div');
-        col.classList.add('col-md-4');
-        
-        const card = document.createElement('div');
-        card.classList.add('card', 'mb-3');
-        
-        const cardBody = document.createElement('div');
-        cardBody.classList.add('card-body');
-        
-        const cardTitle = document.createElement('h4');
-        cardTitle.classList.add('card-title');
-        cardTitle.innerText = coin.symbol.toUpperCase();
-        
-        const cardText = document.createElement('p');
-        cardText.classList.add('card-text');
-        cardText.innerText = coin.name;
-        
-        const moreInfoButton = document.createElement('button');
-        moreInfoButton.classList.add('btn', 'btn-primary');
-        moreInfoButton.innerText = 'More info';
-        moreInfoButton.addEventListener('click', () => toggleMoreInfo(coin.id, card));
-        
-        cardBody.appendChild(cardTitle);
-        cardBody.appendChild(cardText);
-        cardBody.appendChild(moreInfoButton);
-        
-        card.appendChild(cardBody);
-        col.appendChild(card);
-        
-        return col;
+        });
     }
 
-    function toggleMoreInfo(coinId, card) {
-        if (cache[coinId] && (Date.now() - cache[coinId].timestamp < 2 * 60 * 1000)) {
-            displayMoreInfo(card, cache[coinId].data);
-        } else {
-            const progressBar = document.createElement('div');
-            progressBar.classList.add('progress');
-            const progressBarInner = document.createElement('div');
-            progressBarInner.classList.add('progress-bar', 'progress-bar-striped', 'progress-bar-animated');
-            progressBarInner.setAttribute('role', 'progressbar');
-            progressBarInner.style.width = '100%';
-            progressBar.appendChild(progressBarInner);
-            card.appendChild(progressBar);
-            
-            fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`)
-                .then(response => response.json())
-                .then(data => {
-                    cache[coinId] = { data, timestamp: Date.now() };
-                    displayMoreInfo(card, data);
-                    card.removeChild(progressBar);
-                })
-                .catch(error => console.error('Error fetching coin data:', error));
-        }
+    // Function to display coin details
+    function displayCoinDetails(element, data) {
+        const usdPrice = data.market_data.current_price.usd;
+        const eurPrice = data.market_data.current_price.eur;
+        const ilsPrice = data.market_data.current_price.ils;
+
+        const detailsHtml = `
+            <p><strong>USD:</strong> $${usdPrice}</p>
+            <p><strong>EUR:</strong> €${eurPrice}</p>
+            <p><strong>ILS:</strong> ₪${ilsPrice}</p>
+            <img src="${data.image.large}" alt="${data.name} image" style="width:100px;">
+        `;
+        element.html(detailsHtml);
     }
 
-    function displayMoreInfo(card, data) {
-        const existingInfo = card.querySelector('.more-info');
-        if (existingInfo) {
-            existingInfo.remove();
-        } else {
-            const moreInfo = document.createElement('div');
-            moreInfo.classList.add('more-info');
-            
-            const image = document.createElement('img');
-            image.src = data.image.small;
-            image.alt = data.name;
-            image.classList.add('mb-3');
-            
-            const usdPrice = document.createElement('p');
-            usdPrice.innerText = `USD: $${data.market_data.current_price.usd}`;
-            
-            const eurPrice = document.createElement('p');
-            eurPrice.innerText = `EUR: €${data.market_data.current_price.eur}`;
-            
-            const ilsPrice = document.createElement('p');
-            ilsPrice.innerText = `ILS: ₪${data.market_data.current_price.ils}`;
-            
-            moreInfo.appendChild(image);
-            moreInfo.appendChild(usdPrice);
-            moreInfo.appendChild(eurPrice);
-            moreInfo.appendChild(ilsPrice);
-            
-            card.appendChild(moreInfo);
-        }
-    }
+    // Initial load of coins
+    loadCoins();
+
+    // Optionally, set an interval to refresh coins list every 2 minutes
+    setInterval(loadCoins, cacheDuration);
 });
