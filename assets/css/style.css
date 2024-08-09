@@ -243,6 +243,13 @@ input:checked + .slider:before {
         background-color: #4527A0; /* Darker purple button hover color */
         border-color: #4527A0;
       }
+
+      .btn-primary:active {
+        background-color: #58427c !important;
+        border-color: #58427c !important;
+      }
+      
+      
       
       .slider {
         background-color: #d5badb; /* Light gray switch color when off */
