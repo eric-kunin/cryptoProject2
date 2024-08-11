@@ -1,4 +1,4 @@
-$(document).ready(function () {
+ $(document).ready(function () {
     const apiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=usd";
     const coinDetailUrl = "https://api.coingecko.com/api/v3/coins/";
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
