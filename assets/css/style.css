@@ -322,3 +322,59 @@ a.nav-link:hover {
     text-align: center;
     color: #fff;
 }
+/* parallax scroller video */
+:root {
+    --base-font-size: 16px; /* Define your base font size */
+}
+.hero {
+    padding-top: 100px;
+    min-height: 100vh;
+    font-size: calc(var(--base-font-size) * 2);
+    color: white;
+}
+.hero.parallax-video {
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+}
+.hero.parallax-video video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translateX(-50%) translateY(-50%);
+    background-size: cover;
+    transition: 1s opacity;
+}
+.hero.parallax-video .content {
+    position: relative;
+    z-index: 2;
+    padding-top: 100px;
+}
+.hero.parallax-video::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(30,30,30,0.8);
+    z-index: 1;
+}
+.hero h1 {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.hero h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+.stats h3 {
+    font-size: 36px;
+    font-weight: bold;
+    color: #7c4dff;
+}
