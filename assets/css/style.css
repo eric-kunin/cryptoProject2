@@ -267,6 +267,7 @@ input:checked + .slider:before {
 }
 
 
+
 .navbar {
     position: fixed;
     top: 0;
@@ -280,17 +281,49 @@ input:checked + .slider:before {
 }
 .navbar-brand {
     font-weight: bold;
-    font-size: 44px;
+    font-size: 34px;
     color: white !important;
 }
 .nav-link {
+    position: relative;
     color: white !important;
     margin-right: 15px;
+    transition: color 0.3s ease;
 }
-.active {
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 3px;
+    bottom: -5px;
+    left: 0;
+    background-color: #7c4dff;
+    transition: width 0.3s ease;
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+}
+.nav-link:hover {
+    color: #7c4dff !important;
+}
+@keyframes borderAnimation {
+    0% {
+        width: 0;
+        left: 0;
+    }
+    100% {
+        width: 100%;
+        left: 0;
+    }
+}
+.nav-link.active::after {
+    animation: borderAnimation 0.3s ease forwards;
+}
+/* .active {
     padding-bottom: 0px;
     border-bottom: 3px solid #7c4dff;
-}
+} */
 
 .btn-primary {
     background-color: #7c4dff;
@@ -304,14 +337,15 @@ input:checked + .slider:before {
     padding: 10px 20px;
     border-radius: 25px;
     color: white;
+    font-size: 20px;
 }
 a.nav-link {
     font-size: 20px;
 }
-a.nav-link:hover {
+/* a.nav-link:hover {
     background-color: #58427c;
     border-radius: 25px !important;
-}
+} */
 .content-section {
     padding: 50px 0;
     color: white;
@@ -377,4 +411,18 @@ a.nav-link:hover {
     font-size: 36px;
     font-weight: bold;
     color: #7c4dff;
+}
+/* .search-section {
+    background-color: #2a2a2a;
+} */
+.crypto-card {
+    /* background-color: #2a2a2a; */
+    transition: transform 0.3s ease;
+}
+.crypto-card:hover {
+    transform: translateY(-5px);
+}
+.form-control:focus {
+    border-color: #7c4dff;
+    box-shadow: 0 0 0 0.25rem rgba(124, 77, 255, 0.25);
 }

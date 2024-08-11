@@ -36,13 +36,13 @@ $(document).ready(function () {
         coins.forEach((coin, index) => {
             // Create a new row for every 4 coins
             if (index % 4 === 0) {
-                row = $('<div class="row mt-3"></div>');
+                row = $('<div class="row mt-3" id="cryptoCards"></div>');
                 coinContainer.append(row); // Append the new row to the main container
             }
 
             const coinCard = `
                 <div class="col-md-3">
-                    <div class="card" style="width:100%;height:100%;">
+                    <div class="card crypto-card h-100" style="width:100%;height:100%;">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="left-content d-flex align-items-center">
