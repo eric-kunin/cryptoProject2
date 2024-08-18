@@ -1,44 +1,68 @@
- $(document).ready(function () {
-    const apiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=usd";
-    const coinDetailUrl = "https://api.coingecko.com/api/v3/coins/";
+$(document).ready(function () {
+    const usdApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=usd";
+    const ilsApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=ils";
+    const eurApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=eur";
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
     let selectedCoins = []; // Array to keep track of selected coins
 
-    // Function to fetch and display coins
+    // Function to load and display coins
     function loadCoins() {
         const now = new Date().getTime();
-        const cachedCoins = localStorage.getItem('coinsData');
-        const cachedTimestamp = localStorage.getItem('coinsTimestamp');
+        const cachedUsdCoins = localStorage.getItem('usdCoinsData');
+        const cachedIlsCoins = localStorage.getItem('ilsCoinsData');
+        const cachedEurCoins = localStorage.getItem('eurCoinsData');
+        const cachedUsdTimestamp = localStorage.getItem('usdCoinsTimestamp');
+        const cachedIlsTimestamp = localStorage.getItem('ilsCoinsTimestamp');
+        const cachedEurTimestamp = localStorage.getItem('eurCoinsTimestamp');
 
-        if (cachedCoins && cachedTimestamp && now - cachedTimestamp < cacheDuration) {
-            displayCoins(JSON.parse(cachedCoins)); // Use cached data
+        // Check if the data is still valid (within the cache duration)
+        if (cachedUsdCoins && cachedIlsCoins && cachedEurCoins && now - cachedUsdTimestamp < cacheDuration && now - cachedIlsTimestamp < cacheDuration && now - cachedEurTimestamp < cacheDuration) {
+            displayCoins(JSON.parse(cachedUsdCoins), JSON.parse(cachedIlsCoins), JSON.parse(cachedEurCoins));
         } else {
-            axios.get(apiUrl)
-                .then(response => {
-                    const coinsData = response.data.slice(0, 100);
-                    localStorage.setItem('coinsData', JSON.stringify(coinsData));
-                    localStorage.setItem('coinsTimestamp', now);
-                    displayCoins(coinsData); // Only display the first 100 coins
-                })
-                .catch(error => {
-                    console.error("Error fetching coins: ", error);
-                });
+            // Fetch data from all three APIs
+            Promise.all([
+                axios.get(usdApiUrl),
+                axios.get(ilsApiUrl),
+                axios.get(eurApiUrl)
+            ])
+            .then(responses => {
+                const usdCoinsData = responses[0].data.slice(0, 100);
+                const ilsCoinsData = responses[1].data.slice(0, 100);
+                const eurCoinsData = responses[2].data.slice(0, 100);
+
+                // Save data to local storage
+                localStorage.setItem('usdCoinsData', JSON.stringify(usdCoinsData));
+                localStorage.setItem('ilsCoinsData', JSON.stringify(ilsCoinsData));
+                localStorage.setItem('eurCoinsData', JSON.stringify(eurCoinsData));
+                localStorage.setItem('usdCoinsTimestamp', now);
+                localStorage.setItem('ilsCoinsTimestamp', now);
+                localStorage.setItem('eurCoinsTimestamp', now);
+
+                displayCoins(usdCoinsData, ilsCoinsData, eurCoinsData);
+            })
+            .catch(error => {
+                console.error("Error fetching coins: ", error);
+            });
         }
     }
 
     // Function to display coins in the UI
-    function displayCoins(coins) {
+    function displayCoins(usdCoins, ilsCoins, eurCoins) {
         const coinContainer = $('.main');
         coinContainer.empty(); // Clear existing content
 
         let row; // Variable to hold the current row
 
-        coins.forEach((coin, index) => {
+        usdCoins.forEach((coin, index) => {
             // Create a new row for every 4 coins
             if (index % 4 === 0) {
                 row = $('<div class="row mt-3" id="cryptoCards"></div>');
                 coinContainer.append(row); // Append the new row to the main container
             }
+
+            const usdPrice = coin.current_price || 'N/A';
+            const ilsPrice = ilsCoins[index]?.current_price || 'N/A';
+            const eurPrice = eurCoins[index]?.current_price || 'N/A';
 
             const coinCard = `
                 <div class="col-md-3">
@@ -81,35 +105,34 @@
         $('.more-info-btn').on('click', function () {
             const coinId = $(this).data('coin-id');
             const infoContent = $(this).next('.more-info-content');
-            const cachedData = localStorage.getItem(coinId);
-            const now = new Date().getTime();
 
-            // Check if data is cached and still valid
-            if (cachedData) {
-                const cachedObject = JSON.parse(cachedData);
-                if (now - cachedObject.timestamp < cacheDuration) {
-                    displayCoinDetails(infoContent, cachedObject.data);
-                    return;
-                }
-            }
-
-            // If no valid cache, fetch from API
+            // Show the spinner loader while data is being fetched
             $(this).html(`More Info <span class="spinner-border spinner-border-sm"></span>`);
 
-            axios.get(`${coinDetailUrl}${coinId}`)
-                .then(response => {
-                    const coinDetails = {
-                        timestamp: now,
-                        data: response.data
-                    };
-                    localStorage.setItem(coinId, JSON.stringify(coinDetails));
-                    displayCoinDetails(infoContent, response.data);
-                    $(`[data-coin-id="${coinId}"]`).html('More Info');
-                })
-                .catch(error => {
-                    console.error("Error fetching coin details: ", error);
-                    $(this).html('More Info'); // Reset button text on error
-                });
+            // Simulate an asynchronous operation for fetching the data from localStorage
+            setTimeout(() => {
+                // Load data from localStorage
+                const usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
+                const ilsCoinsData = JSON.parse(localStorage.getItem('ilsCoinsData'));
+                const eurCoinsData = JSON.parse(localStorage.getItem('eurCoinsData'));
+
+                const usdData = usdCoinsData.find(c => c.id === coinId);
+                const ilsData = ilsCoinsData.find(c => c.id === coinId);
+                const eurData = eurCoinsData.find(c => c.id === coinId);
+
+                const coinDetails = {
+                    usd: usdData.current_price,
+                    ils: ilsData.current_price,
+                    eur: eurData.current_price,
+                    image: usdData.image,
+                    name: usdData.name
+                };
+
+                displayCoinDetails(infoContent, coinDetails);
+
+                // Reset button text after loading data
+                $(this).html('More Info');
+            }, 500); // Simulated delay to show the spinner (0.5 seconds)
         });
     }
 
@@ -132,15 +155,21 @@
 
     // Function to display coin details
     function displayCoinDetails(element, data) {
-        const usdPrice = data.market_data?.current_price?.usd || 'N/A';
-        const eurPrice = data.market_data?.current_price?.eur || 'N/A';
-        const ilsPrice = data.market_data?.current_price?.ils || 'N/A';
+        const usdPrice = data.usd || 'N/A';
+        const eurPrice = data.eur || 'N/A';
+        const ilsPrice = data.ils || 'N/A';
 
+        // I will use this code maybe later. but I don't need img because I made already logo
+        // const detailsHtml = `
+        //     <p><strong>USD:</strong> $${usdPrice}</p>
+        //     <p><strong>EUR:</strong> €${eurPrice}</p>
+        //     <p><strong>ILS:</strong> ₪${ilsPrice}</p>
+        //     <img src="${data.image}" alt="${data.name} image" style="width:100px;">
+        // `;
         const detailsHtml = `
             <p><strong>USD:</strong> $${usdPrice}</p>
             <p><strong>EUR:</strong> €${eurPrice}</p>
             <p><strong>ILS:</strong> ₪${ilsPrice}</p>
-            <img src="${data.image.large}" alt="${data.name} image" style="width:100px;">
         `;
         element.html(detailsHtml);
     }
