@@ -18,7 +18,7 @@ $(document).ready(function () {
         name: coin.toUpperCase(),
         markerType: "square",
         xValueFormatString: "HH:mm:ss",
-        yValueFormatString: "#,##0",
+        yValueFormatString: "#,##0.0000", // Format for 4 decimal places
         dataPoints: dataPoints[coin]
     }));
 
@@ -37,7 +37,8 @@ $(document).ready(function () {
             includeZero: false,
         },
         toolTip: {
-            shared: true
+            shared: true,
+            content: "{name}: {y}"
         },
         legend: {
             cursor: "pointer",
@@ -68,7 +69,12 @@ $(document).ready(function () {
                 const time = new Date();
 
                 chartsCoins.forEach(coin => {
-                    dataPoints[coin].push({ x: time, y: data[coin.toUpperCase()].USD });
+                    const price = data[coin.toUpperCase()].USD;
+
+                    // Format the price to 4 decimal places
+                    const formattedPrice = price.toFixed(4);
+
+                    dataPoints[coin].push({ x: time, y: parseFloat(formattedPrice) });
                     if (dataPoints[coin].length > 10) {
                         dataPoints[coin].shift();
                     }
