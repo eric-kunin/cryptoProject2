@@ -426,3 +426,16 @@ a.nav-link {
     border-color: #7c4dff;
     box-shadow: 0 0 0 0.25rem rgba(124, 77, 255, 0.25);
 }
+.crypto-card {
+    transition: transform 0.3s ease, height 0.3s ease;
+}
+
+.crypto-card:hover {
+    transform: translateY(-5px);
+}
+
+.more-info-content {
+    display: none;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}

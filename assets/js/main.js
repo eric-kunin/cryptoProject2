@@ -3,8 +3,9 @@ $(document).ready(function () {
     const ilsApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=ils";
     const eurApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=eur";
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
-    let selectedCoins = []; // Array to keep track of selected coins
-
+    let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || []; // Load selected coins from localStorage
+    let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
+    
     // Function to load and display coins
     function loadCoins() {
         const now = new Date().getTime();
@@ -38,10 +39,16 @@ $(document).ready(function () {
                 localStorage.setItem('ilsCoinsTimestamp', now);
                 localStorage.setItem('eurCoinsTimestamp', now);
 
+                // Clear any previous error message
+                $('#errorMessage').hide();
+
                 displayCoins(usdCoinsData, ilsCoinsData, eurCoinsData);
             })
             .catch(error => {
                 console.error("Error fetching coins: ", error);
+
+                // Display error message to the user
+                $('#errorMessage').text('Failed to load cryptocurrency data. Please try again later.').show();
             });
         }
     }
@@ -68,7 +75,7 @@ $(document).ready(function () {
                 <div class="col-md-3">
                     <div class="card crypto-card h-100" style="width:100%;height:100%;">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="left-content d-flex align-items-center">
                                     <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
                                     <div style="width:120px;word-wrap:break-word !important;">
@@ -77,7 +84,7 @@ $(document).ready(function () {
                                     </div>
                                 </div>
                                 <label class="switch">
-                                    <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
+                                    <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -105,34 +112,43 @@ $(document).ready(function () {
         $('.more-info-btn').on('click', function () {
             const coinId = $(this).data('coin-id');
             const infoContent = $(this).next('.more-info-content');
-
-            // Show the spinner loader while data is being fetched
-            $(this).html(`More Info <span class="spinner-border spinner-border-sm"></span>`);
-
-            // Simulate an asynchronous operation for fetching the data from localStorage
-            setTimeout(() => {
-                // Load data from localStorage
-                const usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
-                const ilsCoinsData = JSON.parse(localStorage.getItem('ilsCoinsData'));
-                const eurCoinsData = JSON.parse(localStorage.getItem('eurCoinsData'));
-
-                const usdData = usdCoinsData.find(c => c.id === coinId);
-                const ilsData = ilsCoinsData.find(c => c.id === coinId);
-                const eurData = eurCoinsData.find(c => c.id === coinId);
-
-                const coinDetails = {
-                    usd: usdData.current_price,
-                    ils: ilsData.current_price,
-                    eur: eurData.current_price,
-                    image: usdData.image,
-                    name: usdData.name
-                };
-
-                displayCoinDetails(infoContent, coinDetails);
-
-                // Reset button text after loading data
+            
+            // Toggle the visibility of the info content
+            if (infoContent.is(':visible')) {
+                infoContent.slideUp();
                 $(this).html('More Info');
-            }, 500); // Simulated delay to show the spinner (0.5 seconds)
+            } else {
+                // Show the spinner loader while data is being fetched
+                $(this).html(`More Info <span class="spinner-border spinner-border-sm"></span>`);
+                
+                // Simulate an asynchronous operation for fetching the data from localStorage
+                setTimeout(() => {
+                    // Load data from localStorage
+                    const usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
+                    const ilsCoinsData = JSON.parse(localStorage.getItem('ilsCoinsData'));
+                    const eurCoinsData = JSON.parse(localStorage.getItem('eurCoinsData'));
+                    
+                    const usdData = usdCoinsData.find(c => c.id === coinId);
+                    const ilsData = ilsCoinsData.find(c => c.id === coinId);
+                    const eurData = eurCoinsData.find(c => c.id === coinId);
+                    
+                    const coinDetails = {
+                        usd: usdData.current_price,
+                        ils: ilsData.current_price,
+                        eur: eurData.current_price,
+                        image: usdData.image,
+                        name: usdData.name
+                    };
+                    
+                    displayCoinDetails(infoContent, coinDetails);
+                    
+                    // Show the info content
+                    infoContent.slideDown();
+                    
+                    // Reset button text after loading data
+                    $(this).html('Less Info');
+                }, 500); // Simulated delay to show the spinner (0.5 seconds)
+            }
         });
     }
 
@@ -140,15 +156,23 @@ $(document).ready(function () {
     function attachCheckboxListeners() {
         $('.coin-checkbox').on('change', function () {
             const coinId = $(this).data('coin-id');
+            const coinSymbol = $(this).data('coin-symbol');
             if ($(this).is(':checked')) {
                 if (selectedCoins.length >= 5) {
                     $(this).prop('checked', false);
+                    populateModalWithSelectedCoins(); // Populate modal with selected coins
                     $('#maxCoinsModal').modal('show'); // Show modal if more than 5 coins are selected
                 } else {
                     selectedCoins.push(coinId);
+                    chartsCoins.push(coinSymbol);
+                    localStorage.setItem('selectcoins', JSON.stringify(selectedCoins)); // Save selected coins to localStorage
+                    localStorage.setItem('chartscoins', JSON.stringify(chartsCoins)); // Save selected coin symbols to localStorage
                 }
             } else {
                 selectedCoins = selectedCoins.filter(id => id !== coinId);
+                chartsCoins = chartsCoins.filter(symbol => symbol !== coinSymbol);
+                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins)); // Save updated selected coins to localStorage
+                localStorage.setItem('chartscoins', JSON.stringify(chartsCoins)); // Save updated coin symbols to localStorage
             }
         });
     }
@@ -159,13 +183,6 @@ $(document).ready(function () {
         const eurPrice = data.eur || 'N/A';
         const ilsPrice = data.ils || 'N/A';
 
-        // I will use this code maybe later. but I don't need img because I made already logo
-        // const detailsHtml = `
-        //     <p><strong>USD:</strong> $${usdPrice}</p>
-        //     <p><strong>EUR:</strong> €${eurPrice}</p>
-        //     <p><strong>ILS:</strong> ₪${ilsPrice}</p>
-        //     <img src="${data.image}" alt="${data.name} image" style="width:100px;">
-        // `;
         const detailsHtml = `
             <p><strong>USD:</strong> $${usdPrice}</p>
             <p><strong>EUR:</strong> €${eurPrice}</p>
@@ -174,9 +191,81 @@ $(document).ready(function () {
         element.html(detailsHtml);
     }
 
+    // Function to populate the modal with selected coins
+    function populateModalWithSelectedCoins() {
+        const selectedCoinsList = $('#selectedCoinsContainer');
+        selectedCoinsList.empty();
+
+        const usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
+
+        selectedCoins.forEach(coinId => {
+            const coinData = usdCoinsData.find(coin => coin.id === coinId);
+            if (coinData) {
+                const coinItem = `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="left-content d-flex align-items-center">
+                                    <img class="card-img" src="${coinData.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
+                                    <div>
+                                        <h4 class="card-title">${coinData.symbol.toUpperCase()}</h4>
+                                        <p class="card-text">${coinData.name}</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" class="modal-coin-checkbox" data-coin-id="${coinData.id}" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>`;
+                selectedCoinsList.append(coinItem);
+            }
+        });
+
+        // Attach listeners to modal checkboxes for deselection
+        attachModalCheckboxListeners();
+    }
+
+    // Function to attach listeners to modal checkboxes
+    function attachModalCheckboxListeners() {
+        $('.modal-coin-checkbox').on('change', function () {
+            const coinId = $(this).data('coin-id');
+            const coinSymbol = $(this).data('coin-symbol');
+            if (!$(this).is(':checked')) {
+                // Remove coin from selected coins
+                selectedCoins = selectedCoins.filter(id => id !== coinId);
+                chartsCoins = chartsCoins.filter(symbol => symbol !== coinSymbol);
+
+                // Uncheck the corresponding checkbox in the main list
+                $('.coin-checkbox[data-coin-id="' + coinId + '"]').prop('checked', false);
+
+                // Save updated selected coins to localStorage
+                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
+                localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
+            } else {
+                // Re-select the coin if the switch is checked again
+                if (!selectedCoins.includes(coinId)) {
+                    selectedCoins.push(coinId);
+                    chartsCoins.push(coinSymbol);
+                    $('.coin-checkbox[data-coin-id="' + coinId + '"]').prop('checked', true);
+
+                    // Save updated selected coins to localStorage
+                    localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
+                    localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
+                }
+            }
+        });
+    }
+
     // Initial load of coins
     loadCoins();
 
     // Optionally, set an interval to refresh coins list every 2 minutes
     setInterval(loadCoins, cacheDuration);
+    
+    // On page load, check checkboxes for selected coins
+    selectedCoins.forEach(coinId => {
+        $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', true);
+    });
 });

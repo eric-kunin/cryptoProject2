@@ -1,71 +1,75 @@
-window.onload = function () {
+$(document).ready(function () {
+    let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
+    const dataPoints = {};
 
-    function generateRandomDataPoints() {
-        const dataPoints = [];
-        const startTime = new Date().setHours(10, 0, 0, 0); // Set the start time to 10:00 AM
+    // Initialize dataPoints for each selected coin
+    chartsCoins.forEach(coin => {
+        dataPoints[coin] = [];
+    });
 
-        for (let i = 0; i < 10; i++) {
-            const time = new Date(startTime + i * 2000); // Every 2 seconds
-            const ethValue = Math.floor(Math.random() * 1000); // Random ETH value
-            const btcValue = Math.floor(Math.random() * 7000); // Random BTC value
-            dataPoints.push({ x: time, eth: ethValue, btc: btcValue });
-        }
+    const dataSeries = chartsCoins.map(coin => ({
+        type: "line",
+        showInLegend: true,
+        name: coin.toUpperCase(),
+        markerType: "square",
+        xValueFormatString: "HH:mm:ss",
+        yValueFormatString: "#,##0",
+        dataPoints: dataPoints[coin]
+    }));
 
-        return dataPoints;
-    }
-
-    const data = generateRandomDataPoints();
-
-    var options = {
+    const chart = new CanvasJS.Chart("chartContainer", {
         animationEnabled: true,
         theme: "light2",
-        title:{
-            text: "ETH,BTC to USD"
+        title: {
+            text: chartsCoins.map(coin => coin.toUpperCase()).join(', ') + " to USD"
         },
-        axisX:{
+        axisX: {
             valueFormatString: "HH:mm:ss"
         },
         axisY: {
             title: "Coin Value",
-            minimum: 0
+            minimum: 0,
+            includeZero: false,
         },
-        toolTip:{
-            shared:true
-        },  
-        legend:{
-            cursor:"pointer",
-            verticalAlign: "bottom",
-            horizontalAlign: "left",
+        toolTip: {
+            shared: true
+        },
+        legend: {
+            cursor: "pointer",
+            verticalAlign: "top", // Position the legend at the top
+            horizontalAlign: "center", // Center the legend
             dockInsidePlotArea: true,
-            itemclick: toogleDataSeries
+            itemclick: toggleDataSeries
         },
-        data: [{
-            type: "line",
-            showInLegend: true,
-            name: "ETH",
-            markerType: "square",
-            xValueFormatString: "HH:mm:ss",
-            color: "#F08080",
-            yValueFormatString: "#,##0",
-            dataPoints: data.map(dp => ({ x: dp.x, y: dp.eth }))
-        },
-        {
-            type: "line",
-            showInLegend: true,
-            name: "BTC",
-            lineDashType: "square",
-            yValueFormatString: "#,##0",
-            dataPoints: data.map(dp => ({ x: dp.x, y: dp.btc }))
-        }]
-    };
-    $("#chartContainer").CanvasJSChart(options);
-    
-    function toogleDataSeries(e){
-        if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+        data: dataSeries
+    });
+
+    chart.render();
+
+    function toggleDataSeries(e) {
+        if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
             e.dataSeries.visible = false;
-        } else{
+        } else {
             e.dataSeries.visible = true;
         }
-        e.chart.render();
+        chart.render();
     }
-}
+
+    function fetchData() {
+        if (chartsCoins.length > 0) {
+            $.getJSON(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${chartsCoins.join(',').toUpperCase()}&tsyms=USD`, function (data) {
+                const time = new Date();
+                chartsCoins.forEach(coin => {
+                    dataPoints[coin].push({ x: time, y: data[coin.toUpperCase()].USD });
+                    if (dataPoints[coin].length > 10) {
+                        dataPoints[coin].shift();
+                    }
+                });
+                chart.render();
+            });
+        }
+    }
+
+    fetchData();  // Fetch initial data
+    setInterval(fetchData, 2000);  // Fetch data every 2 seconds
+});
