@@ -2,6 +2,11 @@ $(document).ready(function () {
     let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
     const dataPoints = {};
 
+    if (chartsCoins.length === 0) {
+        $("#chartContainer").html("<h3 style='text-align:center; margin-top: 150px;color:white;'>Please select coins</h3>");
+        return;
+    }
+
     // Initialize dataPoints for each selected coin
     chartsCoins.forEach(coin => {
         dataPoints[coin] = [];
@@ -55,18 +60,25 @@ $(document).ready(function () {
         chart.render();
     }
 
-    function fetchData() {
+    async function fetchData() {
         if (chartsCoins.length > 0) {
-            $.getJSON(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${chartsCoins.join(',').toUpperCase()}&tsyms=USD`, function (data) {
+            try {
+                const response = await axios.get(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${chartsCoins.join(',').toUpperCase()}&tsyms=USD`);
+                const data = response.data;
                 const time = new Date();
+
                 chartsCoins.forEach(coin => {
                     dataPoints[coin].push({ x: time, y: data[coin.toUpperCase()].USD });
                     if (dataPoints[coin].length > 10) {
                         dataPoints[coin].shift();
                     }
                 });
+
                 chart.render();
-            });
+            } catch (error) {
+                console.error("Error fetching data: ", error);
+                $("#chartContainer").html("<h3 style='text-align:center; margin-top: 150px;color:red;'>Failed to load data. Please try again later.</h3>");
+            }
         }
     }
 
