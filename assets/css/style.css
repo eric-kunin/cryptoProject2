@@ -443,3 +443,52 @@ a.nav-link {
     overflow: hidden;
     transition: max-height 0.3s ease;
 }
+.crypto-card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.crypto-card .card-title,
+.crypto-card .card-text {
+    color: #333;
+}
+
+.crypto-cards-container.video-background {
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+.crypto-cards-container.video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translateX(-50%) translateY(-50%);
+    object-fit: cover;
+    z-index: -1;
+}
+
+.crypto-cards-content {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(30, 30, 30, 0.7); /* Semi-transparent background */
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* Adjust card styles for better visibility on video background */
+.crypto-card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.crypto-card .card-title,
+.crypto-card .card-text {
+    color: #333;
+}
