@@ -6,6 +6,177 @@ $(document).ready(function () {
     let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || []; // Load selected coins from localStorage
     let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
     
+    // this is search bar full code script!!
+    let searchTimer;
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimer);
+
+        if (this.value.trim() === "") {
+            searchTimer = setTimeout(function() {
+                if (typeof loadCoins === 'function') {
+                    loadCoins();
+                } else {
+                    console.error('loadCoins is not defined');
+                }
+            }, 500);
+        } else {
+            performPartialSearch();
+        }
+    });
+
+    document.querySelector('.btn-outline-success').addEventListener('click', function() {
+        performExactSearch();
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            performExactSearch();
+        }
+    });
+
+    function performPartialSearch() {
+        let input = document.getElementById('searchInput').value.trim().toUpperCase();
+        if (input === "") {
+            if (typeof loadCoins === 'function') {
+                loadCoins();
+            } else {
+                console.error('loadCoins is not defined');
+            }
+            return;
+        }
+
+        let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
+        let ilsCoins = JSON.parse(localStorage.getItem('ilsCoinsData')) || [];
+        let eurCoins = JSON.parse(localStorage.getItem('eurCoinsData')) || [];
+        let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || [];
+        let filteredCoins = usdCoins.filter(coin => 
+            coin.name.toUpperCase().includes(input) || 
+            coin.symbol.toUpperCase().includes(input)
+        );
+
+        displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
+    }
+
+    function performExactSearch() {
+        let input = document.getElementById('searchInput').value.trim().toUpperCase();
+        if (input === "") {
+            if (typeof loadCoins === 'function') {
+                loadCoins();
+            } else {
+                console.error('loadCoins is not defined');
+            }
+            return;
+        }
+
+        let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
+        let ilsCoins = JSON.parse(localStorage.getItem('ilsCoinsData')) || [];
+        let eurCoins = JSON.parse(localStorage.getItem('eurCoinsData')) || [];
+        let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || [];
+        let filteredCoins = usdCoins.filter(coin => 
+            coin.name.toUpperCase() === input || 
+            coin.symbol.toUpperCase() === input
+        );
+
+        displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
+    }
+
+    function displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins) {
+        let cryptoCardsContainer = document.querySelector('.main');
+        cryptoCardsContainer.innerHTML = '';
+
+        if (filteredCoins.length === 0) {
+            cryptoCardsContainer.innerHTML = '';
+        } else {
+            let row = document.createElement('div');
+            row.className = 'row mt-3';
+            cryptoCardsContainer.appendChild(row);
+
+            filteredCoins.forEach((coin, index) => {
+                if (index % 4 === 0 && index !== 0) {
+                    row = document.createElement('div');
+                    row.className = 'row mt-3';
+                    cryptoCardsContainer.appendChild(row);
+                }
+
+                const usdPrice = coin.current_price || 'N/A';
+                const ilsPrice = ilsCoins[index]?.current_price || 'N/A';
+                const eurPrice = eurCoins[index]?.current_price || 'N/A';
+
+                const coinCard = `
+                    <div class="col-md-3">
+                        <div class="card crypto-card h-100" style="width:100%;height:100%;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="left-content d-flex align-items-center">
+                                        <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
+                                        <div style="width:120px;word-wrap:break-word !important;">
+                                            <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
+                                            <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
+                                        </div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
+                                        More Info
+                                    </button>
+                                    <div class="more-info-content mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                row.appendChild(document.createRange().createContextualFragment(coinCard));
+            });
+
+            attachMoreInfoListeners();
+            attachCheckboxListeners();
+        }
+    }
+
+    function attachMoreInfoListeners() {
+        document.querySelectorAll('.more-info-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const coinId = this.getAttribute('data-coin-id');
+                const infoContent = this.nextElementSibling;
+
+                if (infoContent.style.display === 'block') {
+                    infoContent.style.display = 'none';
+                    this.textContent = 'More Info';
+                } else {
+                    this.textContent = 'Less Info';
+                    infoContent.innerHTML = `<p>Loading additional info for ${coinId}...</p>`;
+                    setTimeout(() => {
+                        infoContent.innerHTML = `<p>Details about ${coinId}</p>`;
+                        infoContent.style.display = 'block';
+                    }, 500);
+                }
+            });
+        });
+    }
+
+    function attachCheckboxListeners() {
+        document.querySelectorAll('.coin-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const coinId = this.getAttribute('data-coin-id');
+                let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || [];
+
+                if (this.checked) {
+                    selectedCoins.push(coinId);
+                } else {
+                    selectedCoins = selectedCoins.filter(id => id !== coinId);
+                }
+
+                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
+            });
+        });
+    } 
+    // end code of search bar
+
     // Function to load and display coins
     function loadCoins() {
         const now = new Date().getTime();
@@ -268,4 +439,5 @@ $(document).ready(function () {
     selectedCoins.forEach(coinId => {
         $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', true);
     });
+    
 });
