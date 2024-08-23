@@ -2018,3 +2018,389 @@ input:checked + .slider:before {
     </script>
 </body>
 </html>
+<!-- search bar -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptonite</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: #3f3185;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+        .navbar-scrolled {
+            background-color: rgba(63, 49, 133, 0.9);
+        }
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 150px 0 100px;
+            min-height: 100vh;
+        }
+        .hero video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            z-index: -1;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30,30,30,0.7);
+            z-index: -1;
+        }
+        .search-section {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px 0;
+            position: relative;
+            z-index: 10;
+        }
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .search-input {
+            flex-grow: 1;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px 0 0 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .search-input:focus {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .search-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 0 30px 30px 0;
+            background-color: #7c4dff;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .search-button:hover {
+            background-color: #6a3aff;
+        }
+        .search-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-top: none;
+            width:250px;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .search-dropdown div {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .search-dropdown div:hover {
+            background-color: #3f3f3f;
+        }
+        .crypto-cards-container {
+            position: relative;
+            overflow: hidden;
+            padding: 50px 0;
+            min-height: 100vh;
+        }
+        .crypto-cards-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        .crypto-cards-content {
+            position: relative;
+            z-index: 1;
+        }
+        .crypto-cards-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.7);
+            z-index: -1;
+        }
+        .crypto-card {
+            background-color: rgba(42, 42, 42, 0.8);
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .crypto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(124, 77, 255, 0.2);
+        }
+        .btn-primary {
+            background-color: #7c4dff;
+            border-color: #7c4dff;
+        }
+        .btn-primary:hover {
+            background-color: #6a3aff;
+            border-color: #6a3aff;
+        }
+        .stats h3 {
+            font-size: 36px;
+            font-weight: bold;
+            color: #7c4dff;
+        }
+        
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Cryptonite</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+                <button class="btn btn-primary ms-3">Get Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <video autoplay muted loop id="heroVideo">
+            <source src="./assets/vid/video.mp4" type="video/mp4">
+        </video>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="display-4 fw-bold mb-4">Welcome to Cryptonite</h1>
+                    <p class="lead mb-4">Your gateway to the world of cryptocurrency. Trade, invest, and grow your digital assets with confidence.</p>
+                    <button class="btn btn-primary btn-lg">Start Trading</button>
+                </div>
+            </div>
+            <div class="row mt-5 stats">
+                <div class="col-md-4 text-center">
+                    <h3>5346</h3>
+                    <p>Wallets</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h3>2453</h3>
+                    <p>Clients</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h3>425</h3>
+                    <p>Traders</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="search-section py-3">
+    <div class="container">
+        <div class="search-container">
+            <input type="text" class="search-input" id="cryptoSearch" placeholder="Search cryptocurrencies (e.g. BTC, ETH)">
+            <button class="search-button">
+                <i class="bi bi-search"></i> Search
+            </button>
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+    </div>
+</section>
+
+    <section class="crypto-cards-container">
+        <video autoplay muted loop id="cryptoCardsVideo">
+            <source src="./assets/vid/video2.mp4" type="video/mp4">
+        </video>
+        <div class="crypto-cards-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 mb-4">
+                        <div class="card crypto-card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title" style="color:white;">BTC</h3>
+                                <p class="card-text" style="color:white;">Bitcoin</p>
+                                <button class="btn btn-primary">More Info</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card crypto-card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">ETH</h3>
+                                <p class="card-text">Ethereum</p>
+                                <button class="btn btn-primary">More Info</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card crypto-card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">USDT</h3>
+                                <p class="card-text">Tether</p>
+                                <button class="btn btn-primary">More Info</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="card crypto-card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">BNB</h3>
+                                <p class="card-text">Binance Coin</p>
+                                <button class="btn btn-primary">More Info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 Cryptonite. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('scroll', function() {
+            var navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('navbar-scrolled');
+            } else {
+                navbar.classList.remove('navbar-scrolled');
+            }
+
+            // Parallax effect for hero video
+            var heroVideo = document.querySelector('#heroVideo');
+            var heroScrollPosition = window.pageYOffset;
+            heroVideo.style.transform = 'translate(-50%, -50%) translateY(' + heroScrollPosition * 0.5 + 'px)';
+
+            // Adjusted parallax effect for crypto cards video
+            var cryptoCardsVideo = document.querySelector('#cryptoCardsVideo');
+            var cryptoCardsContainer = document.querySelector('.crypto-cards-container');
+            var containerRect = cryptoCardsContainer.getBoundingClientRect();
+            var containerVisibleHeight = Math.min(containerRect.bottom, window.innerHeight) - Math.max(containerRect.top, 0);
+            
+            if (containerVisibleHeight > 0) {
+                var scrollPercentage = (window.innerHeight - containerRect.top) / (window.innerHeight + containerRect.height);
+                cryptoCardsVideo.style.transform = 'translateY(' + (scrollPercentage * 50) + 'px)';
+            }
+        });
+
+        // Search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('cryptoSearch');
+            const dropdown = document.getElementById('searchDropdown');
+            const cryptocurrencies = [
+                { symbol: 'BTC', name: 'Bitcoin' },
+                { symbol: 'ETH', name: 'Ethereum' },
+                { symbol: 'USDT', name: 'Tether' },
+                { symbol: 'BNB', name: 'Binance Coin' },
+                { symbol: 'SOL', name: 'Solana' },
+                { symbol: 'XRP', name: 'Ripple' },
+                { symbol: 'ADA', name: 'Cardano' },
+                { symbol: 'USDC', name: 'USD Coin' },
+                { symbol: 'AVAX', name: 'Avalanche' },
+                { symbol: 'DOGE', name: 'Dogecoin' }
+            ];
+
+            // Populate dropdown
+            cryptocurrencies.forEach(crypto => {
+                const div = document.createElement('div');
+                div.textContent = `${crypto.symbol} - ${crypto.name}`;
+                div.setAttribute('data-value', crypto.symbol);
+                dropdown.appendChild(div);
+            });
+
+            searchInput.addEventListener('input', function() {
+                const filter = this.value.toUpperCase();
+                const options = dropdown.childNodes;
+                let hasVisibleOptions = false;
+
+                options.forEach(option => {
+                    if (option.textContent.toUpperCase().indexOf(filter) > -1) {
+                        option.style.display = '';
+                        hasVisibleOptions = true;
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+
+                dropdown.style.display = hasVisibleOptions && this.value.length > 0 ? 'block' : 'none';
+            });
+
+            dropdown.addEventListener('click', function(e) {
+                if (e.target.hasAttribute('data-value')) {
+                    searchInput.value = e.target.getAttribute('data-value');
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {dropdown.style.display = 'none';
+                }
+            });
+
+            searchInput.addEventListener('focus', function() {
+                if (this.value.length > 0) {
+                    dropdown.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
