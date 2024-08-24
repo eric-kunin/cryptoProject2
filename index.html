@@ -6,7 +6,6 @@
         1. collapse card
         2. switch button in ipad 
         3. search bar
-        4. add error message in div - ✔ fixed bug
 
     Notes:
         I did not do the task "a. Dynamically creating a DOM every time one of the navigation buttons is clicked, for example clicking on "About"
@@ -49,7 +48,7 @@
     <title>Cryptonite</title>
 </head>
 <body>
-    <nav id="navbar" class="navbar navbar-expand-lg">
+    <nav id="navbar" class="navbar navbar-expand-lg" data-bs-spy="scroll" data-bs-target="#navbarNav">
         <div class="container">
             <a class="navbar-brand" href="#">Cryptonite</a>
             <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,8 +65,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="./LiveReports.html">Live Reports</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-3" href="#searchBar">Get Started</a>
+                    </li>
                 </ul>
-                <button class="btn btn-primary ms-3" style="font-weight: bold;">Get Started</button>
+                <!-- <button class="btn btn-primary ms-3" style="font-weight: bold;">Get Started</button> -->
             </div>
         </div>
     </nav>
@@ -93,7 +95,8 @@
                         <h1>EXCHANGE PLATFORM</h1>
                         <h2>Create, hold or trade cryptocurrency</h2>
                         <p>Experience lightning-fast transactions with unbeatable security. Join the future!</p>
-                        <button class="btn btn-secondary">Explore</button>
+                        <!-- <button class="btn btn-secondary">Explore</button> -->
+                        <a class="btn btn-secondary" href="#searchBar">Explore</a>
                     </div>
                 </div>
                 <div class="row mt-5 stats">
@@ -136,7 +139,7 @@
             Your browser does not support the video tag.
         </video>
     </div>
-    <div class="container">
+    <div class="container" id="searchBar">
         <!-- search bar -->
         <section class="search-section py-3">
                 <form class="d-flex justify-content-center">
@@ -149,7 +152,6 @@
                     </div>
                 </form>
         </section>
-        
         <!-- main -->
         <div class="main">
             <!-- display every 1 row with 4 coins here  -->
@@ -175,7 +177,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </>
 
     <!-- end div container -->
      <!-- copyrights -->

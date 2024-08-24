@@ -32,7 +32,7 @@
 </head>
 <body>
     
-    <nav id="navbar" class="navbar navbar-expand-lg">
+    <nav id="navbar" class="navbar navbar-expand-lg" data-bs-spy="scroll" data-bs-target="#navbarNav">
         <div class="container">
             <a class="navbar-brand" href="#">Cryptonite</a>
             <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,8 +49,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="./LiveReports.html">Live Reports</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-3" href="#about">Get Started</a>
+                    </li>
                 </ul>
-                <button class="btn btn-primary ms-3" style="font-weight: bold;">Get Started</button>
+                <!-- <button class="btn btn-primary ms-3" style="font-weight: bold;">Get Started</button> -->
             </div>
         </div>
     </nav>
@@ -76,7 +79,8 @@
                         <h1>EXCHANGE PLATFORM</h1>
                         <h2>Create, hold or trade cryptocurrency</h2>
                         <p>Experience lightning-fast transactions with unbeatable security. Join the future!</p>
-                        <button class="btn btn-secondary">Explore</button>
+                        <!-- <button class="btn btn-secondary">Explore</button> -->
+                        <a class="btn btn-secondary" href="#about">Explore</a>
                     </div>
                 </div>
                 <div class="row mt-5 stats">
@@ -105,14 +109,21 @@
                 navbar.classList.remove('navbar-scrolled');
             }
         });
-
+    
         window.addEventListener('scroll', function() {
             var video = document.querySelector('#myVideo');
             var scrollPosition = window.pageYOffset;
             video.style.transform = 'translate3d(-50%, -50%, 0) translateY(' + scrollPosition * 0.5 + 'px)';
         });
     </script>
-    <div class="container mt-3">
+    
+        <div class="video-background">
+            <video autoplay muted loop id="bg-video">
+                <source src="./assets/vid/video2.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    <div id="about" class="container mt-3">
         <div class="content-section">
             <div class="container">
                 <h2>Why Choose CryptoM5?</h2>
