@@ -662,3 +662,157 @@ a.nav-link {
 .search-dropdown div:hover {
     background-color: #3f3f3f;
 }
+
+/* --------------------- */
+/* about page css */
+/* ---------------- */
+.containerAbout {
+    width:100% !important;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background-color: #212428;
+    color: white;
+    display: flex;
+    justify-content: center;
+}
+.containerAbout > * {
+
+}
+.about-platform {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+.about-image {
+    flex: 1;
+    max-width: 35%;
+    /* height: 15%; */
+}
+.about-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+.about-content {
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+}
+h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+.pAbout {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #cccccc;
+}
+.explore-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #7c4dff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.explore-btn:hover {
+    background-color: #6a3aff;
+}
+@media (max-width: 768px) {
+    .about-platform {
+        flex-direction: column;
+    }
+    .about-image {
+        max-width: 100%;
+    }
+}
+/* -------------------- */
+/* about - traders cards */
+/* -------------------- */
+.containerTrader {
+    width: 100%;
+    background-color: #f5f5f5;
+    margin: 0 auto;
+}
+.traderTitle {
+    text-align: center;
+    color: #333;
+    margin-bottom: 40px;
+    font-weight: bold;
+    font-size: 3rem;
+}
+.traderTeamGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+.traderTeamMember {
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+.traderTeamMember img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+.traderMemberInfo {
+    padding: 20px;
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.traderMemberName {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0 0 5px;
+}
+.traderMemberRole {
+    font-size: 0.9em;
+    color: #666;
+    text-transform: uppercase;
+    margin: 0 0 15px;
+}
+.traderMemberDescription {
+    font-size: 0.9em;
+    color: #333;
+    margin-bottom: 15px;
+}
+.traderSocialIcons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.traderSocialIcons a {
+    background-color: #4e3bb9;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+.traderSocialIcons a:hover {
+    background-color: #3c2d91;
+}
+@media (max-width: 1024px) {
+    .traderTeamGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .traderTeamGrid {
+        grid-template-columns: 1fr;
+    }
+}
