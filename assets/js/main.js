@@ -5,7 +5,7 @@ $(document).ready(function () {
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
     let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || []; // Load selected coins from localStorage
     let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
-    
+
     // this is search bar full code script!!
     let searchTimer;
 
@@ -214,6 +214,7 @@ $(document).ready(function () {
                 $('#errorMessage').hide();
 
                 displayCoins(usdCoinsData, ilsCoinsData, eurCoinsData);
+                populateSearchDropdown(usdCoinsData); // Populate the dropdown with the USD coins
             })
             .catch(error => {
                 console.error("Error fetching coins: ", error);
@@ -277,6 +278,63 @@ $(document).ready(function () {
         // Attach event listeners to the checkboxes
         attachCheckboxListeners();
     }
+
+    function populateSearchDropdown(coinsData) {
+        const dropdown = document.getElementById('searchDropdown');
+        dropdown.innerHTML = ''; // Clear existing options
+    
+        coinsData.forEach(coin => {
+            const div = document.createElement('div');
+            div.textContent = `${coin.symbol.toUpperCase()} - ${coin.name}`;
+            div.setAttribute('data-value', coin.symbol.toUpperCase());
+            dropdown.appendChild(div);
+        });
+    
+        attachSearchDropdownListeners();
+    }
+    
+    function attachSearchDropdownListeners() {
+        const searchInput = document.getElementById('searchInput');
+        const dropdown = document.getElementById('searchDropdown');
+    
+        searchInput.addEventListener('input', function () {
+            const filter = this.value.toUpperCase();
+            const options = dropdown.childNodes;
+            let hasVisibleOptions = false;
+    
+            options.forEach(option => {
+                if (option.textContent.toUpperCase().includes(filter)) {
+                    option.style.display = '';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+    
+            dropdown.style.display = hasVisibleOptions && this.value.length > 0 ? 'block' : 'none';
+        });
+    
+        dropdown.addEventListener('click', function (e) {
+            if (e.target.hasAttribute('data-value')) {
+                searchInput.value = e.target.getAttribute('data-value');
+                dropdown.style.display = 'none';
+                performExactSearch(); // Perform the search based on the selected value
+            }
+        });
+    
+        document.addEventListener('click', function (e) {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    
+        searchInput.addEventListener('focus', function () {
+            if (this.value.length > 0) {
+                dropdown.style.display = 'block';
+            }
+        });
+    }
+    
 
     // Function to attach listeners to "More Info" buttons
     function attachMoreInfoListeners() {
@@ -439,5 +497,6 @@ $(document).ready(function () {
     selectedCoins.forEach(coinId => {
         $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', true);
     });
+    
     
 });

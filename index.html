@@ -3,9 +3,11 @@
         I added a README.md and wrote some explanations related
         to the code.
      bugs:
-        1. collapse card
+        1. collapse card and, add comma, and make "More Info" in center down
         2. switch button in ipad 
-        3. search bar
+        3. search bar (add extra div to display result of search)
+        4. about page
+        5. add "Use Strict" and jquery....
 
     Notes:
         I did not do the task "a. Dynamically creating a DOM every time one of the navigation buttons is clicked, for example clicking on "About"
@@ -141,7 +143,7 @@
     </div>
     <div class="container" id="searchBar">
         <!-- search bar -->
-        <section class="search-section py-3">
+        <!-- <section class="search-section py-3">
                 <form class="d-flex justify-content-center">
                     <div class="input-group mb-3" style="max-width: 500px;">
                         <input type="text" class="form-control search-input" id="searchInput" placeholder="Search cryptocurrencies (e.g. BTC, ETH)" aria-label="Search cryptocurrencies">
@@ -151,7 +153,19 @@
                         <div class="search-dropdown" id="searchDropdown"></div>
                     </div>
                 </form>
+        </section> -->
+        <section class="search-section py-3">
+            <div class="container">
+                <div class="search-container" style="max-width: 600px;">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search cryptocurrencies (e.g. BTC, ETH)">
+                    <button class="btn btn-outline-success search-button">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    <div class="search-dropdown" id="searchDropdown"></div>
+                </div>
+            </div>
         </section>
+        
         <!-- main -->
         <div class="main">
             <!-- display every 1 row with 4 coins here  -->
@@ -177,7 +191,6 @@
                 </div>
             </div>
         </div>
-    </>
 
     <!-- end div container -->
      <!-- copyrights -->
