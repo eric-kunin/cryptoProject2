@@ -38,15 +38,17 @@ $(document).ready(function () {
 
     function performPartialSearch() {
         let input = document.getElementById('searchInput').value.trim().toUpperCase();
+        let searchResultMessage = document.getElementById('searchResultMessage');
         if (input === "") {
             if (typeof loadCoins === 'function') {
                 loadCoins();
             } else {
                 console.error('loadCoins is not defined');
             }
+            searchResultMessage.textContent = ""; // Clear message when input is empty
             return;
         }
-
+    
         let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
         let ilsCoins = JSON.parse(localStorage.getItem('ilsCoinsData')) || [];
         let eurCoins = JSON.parse(localStorage.getItem('eurCoinsData')) || [];
@@ -55,21 +57,54 @@ $(document).ready(function () {
             coin.name.toUpperCase().includes(input) || 
             coin.symbol.toUpperCase().includes(input)
         );
+    
+        // Update the message with the number of coins found
+        searchResultMessage.textContent = `Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`;
 
+    
         displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
     }
-
+    
+    // Set an interval to check if the search input is empty and clear the message
+    setInterval(function() {
+        let input = document.getElementById('searchInput').value.trim();
+        let searchResultMessage = document.getElementById('searchResultMessage');
+        
+        if (input === "") {
+            searchResultMessage.textContent = ""; // Clear message when input is empty
+        }
+    }, 500);
+    
+    
     function performExactSearch() {
+        
+        let searchResultMessage = document.getElementById('searchResultMessage');
+        // Set an interval to check if the search input is empty every 500 milliseconds
+        setInterval(function() {
+            let input = document.getElementById('searchInput').value.trim().toUpperCase();
+            if (input === "") {
+                if (typeof loadCoins === 'function') {
+                    loadCoins();
+                } else {
+                    console.error('loadCoins is not defined');
+                }
+                searchResultMessage.textContent = `Found ${getTotalCoinsCount()} coins`; // Display total coins count when input is empty
+                return;
+            }
+        }, 500);
+    
         let input = document.getElementById('searchInput').value.trim().toUpperCase();
+    
         if (input === "") {
             if (typeof loadCoins === 'function') {
                 loadCoins();
             } else {
                 console.error('loadCoins is not defined');
             }
+            searchResultMessage.textContent = ""; // Clear message when input is empty
             return;
         }
-
+    
         let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
         let ilsCoins = JSON.parse(localStorage.getItem('ilsCoinsData')) || [];
         let eurCoins = JSON.parse(localStorage.getItem('eurCoinsData')) || [];
@@ -78,9 +113,14 @@ $(document).ready(function () {
             coin.name.toUpperCase() === input || 
             coin.symbol.toUpperCase() === input
         );
-
+    
+        // Update the message with the number of coins found
+        searchResultMessage.textContent = `Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`;
+    
         displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
     }
+    
+    
 
     function displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins) {
         let cryptoCardsContainer = document.querySelector('.main');
