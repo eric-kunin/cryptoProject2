@@ -8,42 +8,10 @@ $(document).ready(function () {
     // this is search bar full code script!!
     let searchTimer;
     
-    // this is about.index js code
     document.getElementById('currentYear').textContent = new Date().getFullYear();
-    function updateMarketTrends() {
-        const marketTrendsContainer = document.getElementById('market-trends');
-        marketTrendsContainer.innerHTML = ''; // Clear any existing content
-    
-        let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
-    
-        const trendsToShow = usdCoins.slice(0, 3); // Select the top 3 coins to display
-    
-        trendsToShow.forEach((coin, index) => {
-            const usdPrice = formatPrice(coin.current_price);
-            const priceChange24h = coin.price_change_percentage_24h ? `${coin.price_change_percentage_24h.toFixed(2)}%` : 'N/A';
-    
-            const trendCard = `
-                <div class="col-md-4">
-                    <h3>${coin.name} (${coin.symbol.toUpperCase()})</h3>
-                    <p>Current Price: $${usdPrice}</p>
-                    <p>24h Change: ${priceChange24h}</p>
-                </div>
-            `;
-            marketTrendsContainer.innerHTML += trendCard;
-        });
-    }
-    
-    function formatPrice(price) {
-        if (!price) return 'N/A';
-        return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
     
     // Call the function after the coins data is loaded and displayed
     loadCoins();
-    updateMarketTrends();
-    
-    // Optionally, update the market trends periodically
-    setInterval(updateMarketTrends, 5000);    
 
     document.getElementById('searchInput').addEventListener('input', function() {
         clearTimeout(searchTimer);
@@ -187,7 +155,7 @@ $(document).ready(function () {
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="left-content d-flex align-items-center">
                                         <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
-                                        <div style="width:120px;word-wrap:break-word !important;">
+                                        <div style="width:100%;word-wrap:break-word !important;">
                                             <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
                                             <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
                                         </div>

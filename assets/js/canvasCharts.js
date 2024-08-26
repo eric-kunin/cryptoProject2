@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
     let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
     const dataPoints = {};
 
