@@ -5,9 +5,45 @@ $(document).ready(function () {
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
     let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || []; // Load selected coins from localStorage
     let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
-
     // this is search bar full code script!!
     let searchTimer;
+    
+    // this is about.index js code
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    function updateMarketTrends() {
+        const marketTrendsContainer = document.getElementById('market-trends');
+        marketTrendsContainer.innerHTML = ''; // Clear any existing content
+    
+        let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
+    
+        const trendsToShow = usdCoins.slice(0, 3); // Select the top 3 coins to display
+    
+        trendsToShow.forEach((coin, index) => {
+            const usdPrice = formatPrice(coin.current_price);
+            const priceChange24h = coin.price_change_percentage_24h ? `${coin.price_change_percentage_24h.toFixed(2)}%` : 'N/A';
+    
+            const trendCard = `
+                <div class="col-md-4">
+                    <h3>${coin.name} (${coin.symbol.toUpperCase()})</h3>
+                    <p>Current Price: $${usdPrice}</p>
+                    <p>24h Change: ${priceChange24h}</p>
+                </div>
+            `;
+            marketTrendsContainer.innerHTML += trendCard;
+        });
+    }
+    
+    function formatPrice(price) {
+        if (!price) return 'N/A';
+        return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    
+    // Call the function after the coins data is loaded and displayed
+    loadCoins();
+    updateMarketTrends();
+    
+    // Optionally, update the market trends periodically
+    setInterval(updateMarketTrends, 5000);    
 
     document.getElementById('searchInput').addEventListener('input', function() {
         clearTimeout(searchTimer);
