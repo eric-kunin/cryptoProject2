@@ -792,3 +792,17 @@ h2 {
         grid-template-columns: 1fr;
     }
 }
+#searchDropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Position it directly below the input field */
+    left: 0;
+    right: 0;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-top: none;
+    border-radius: 0 0 15px 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}

@@ -5,11 +5,10 @@ $(document).ready(function () {
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
     let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || []; // Load selected coins from localStorage
     let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
-    // this is search bar full code script!!
     let searchTimer;
-    
+
     document.getElementById('currentYear').textContent = new Date().getFullYear();
-    
+
     // Call the function after the coins data is loaded and displayed
     loadCoins();
 
@@ -40,19 +39,45 @@ $(document).ready(function () {
         }
     });
 
-    function performPartialSearch() {
-        let input = document.getElementById('searchInput').value.trim().toUpperCase();
+    // Event listener to clear the message when the input is empty
+    document.getElementById('searchInput').addEventListener('input', function() {
+        let input = this.value.trim();
         let searchResultMessage = document.getElementById('searchResultMessage');
+
         if (input === "") {
+            searchResultMessage.textContent = ""; // Clear message when input is empty
+        }
+    });
+
+    // Event listener to handle input changes and update the message accordingly
+    document.getElementById('searchInput').addEventListener('input', function() {
+        let input = this.value.trim().toUpperCase();
+        let searchResultMessage = document.getElementById('searchResultMessage');
+
+        if (input === "") {
+            // Clear the message when the input is empty
+            searchResultMessage.textContent = "";
+            // Optionally, reload all coins if input is empty
             if (typeof loadCoins === 'function') {
                 loadCoins();
             } else {
                 console.error('loadCoins is not defined');
             }
+        } else {
+            // Perform search or other actions when there is input
+            performPartialSearch();
+        }
+    });
+
+    // Adjust the performPartialSearch function to ensure the message is updated correctly
+    function performPartialSearch() {
+        let input = document.getElementById('searchInput').value.trim().toUpperCase();
+        let searchResultMessage = document.getElementById('searchResultMessage');
+        if (input === "") {
             searchResultMessage.textContent = ""; // Clear message when input is empty
             return;
         }
-    
+
         let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
         let ilsCoins = JSON.parse(localStorage.getItem('ilsCoinsData')) || [];
         let eurCoins = JSON.parse(localStorage.getItem('eurCoinsData')) || [];
@@ -61,44 +86,17 @@ $(document).ready(function () {
             coin.name.toUpperCase().includes(input) || 
             coin.symbol.toUpperCase().includes(input)
         );
-    
+
         // Update the message with the number of coins found
         searchResultMessage.textContent = `Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`;
 
-    
         displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
     }
-    
-    // Set an interval to check if the search input is empty and clear the message
-    setInterval(function() {
-        let input = document.getElementById('searchInput').value.trim();
-        let searchResultMessage = document.getElementById('searchResultMessage');
-        
-        if (input === "") {
-            searchResultMessage.textContent = ""; // Clear message when input is empty
-        }
-    }, 500);
-    
-    
+
     function performExactSearch() {
-        
         let searchResultMessage = document.getElementById('searchResultMessage');
-        // Set an interval to check if the search input is empty every 500 milliseconds
-        setInterval(function() {
-            let input = document.getElementById('searchInput').value.trim().toUpperCase();
-            if (input === "") {
-                if (typeof loadCoins === 'function') {
-                    loadCoins();
-                } else {
-                    console.error('loadCoins is not defined');
-                }
-                searchResultMessage.textContent = `Found ${getTotalCoinsCount()} coins`; // Display total coins count when input is empty
-                return;
-            }
-        }, 500);
-    
         let input = document.getElementById('searchInput').value.trim().toUpperCase();
-    
+
         if (input === "") {
             if (typeof loadCoins === 'function') {
                 loadCoins();
@@ -108,7 +106,7 @@ $(document).ready(function () {
             searchResultMessage.textContent = ""; // Clear message when input is empty
             return;
         }
-    
+
         let usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
         let ilsCoins = JSON.parse(localStorage.getItem('ilsCoinsData')) || [];
         let eurCoins = JSON.parse(localStorage.getItem('eurCoinsData')) || [];
@@ -117,109 +115,12 @@ $(document).ready(function () {
             coin.name.toUpperCase() === input || 
             coin.symbol.toUpperCase() === input
         );
-    
+
         // Update the message with the number of coins found
         searchResultMessage.textContent = `Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`;
-    
+
         displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
     }
-    
-    
-
-    function displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins) {
-        let cryptoCardsContainer = document.querySelector('.main');
-        cryptoCardsContainer.innerHTML = '';
-
-        if (filteredCoins.length === 0) {
-            cryptoCardsContainer.innerHTML = '';
-        } else {
-            let row = document.createElement('div');
-            row.className = 'row mt-3';
-            cryptoCardsContainer.appendChild(row);
-
-            filteredCoins.forEach((coin, index) => {
-                if (index % 4 === 0 && index !== 0) {
-                    row = document.createElement('div');
-                    row.className = 'row mt-3';
-                    cryptoCardsContainer.appendChild(row);
-                }
-
-                const usdPrice = coin.current_price || 'N/A';
-                const ilsPrice = ilsCoins[index]?.current_price || 'N/A';
-                const eurPrice = eurCoins[index]?.current_price || 'N/A';
-
-                const coinCard = `
-                    <div class="col-md-3">
-                        <div class="card crypto-card h-100" style="width:100%;height:100%;min-width: 300px;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="left-content d-flex align-items-center">
-                                        <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
-                                        <div style="width:100%;word-wrap:break-word !important;">
-                                            <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
-                                            <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
-                                        </div>
-                                    </div>
-                                    <label class="switch">
-                                        <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-                                <div class="text-center mt-3">
-                                    <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
-                                        More Info
-                                    </button>
-                                    <div class="more-info-content mt-3"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                row.appendChild(document.createRange().createContextualFragment(coinCard));
-            });
-
-            attachMoreInfoListeners();
-            attachCheckboxListeners();
-        }
-    }
-
-    function attachMoreInfoListeners() {
-        document.querySelectorAll('.more-info-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const coinId = this.getAttribute('data-coin-id');
-                const infoContent = this.nextElementSibling;
-
-                if (infoContent.style.display === 'block') {
-                    infoContent.style.display = 'none';
-                    this.textContent = 'More Info';
-                } else {
-                    this.textContent = 'Less Info';
-                    infoContent.innerHTML = `<p>Loading additional info for ${coinId}...</p>`;
-                    setTimeout(() => {
-                        infoContent.innerHTML = `<p>Details about ${coinId}</p>`;
-                        infoContent.style.display = 'block';
-                    }, 500);
-                }
-            });
-        });
-    }
-
-    function attachCheckboxListeners() {
-        document.querySelectorAll('.coin-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const coinId = this.getAttribute('data-coin-id');
-                let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || [];
-
-                if (this.checked) {
-                    selectedCoins.push(coinId);
-                } else {
-                    selectedCoins = selectedCoins.filter(id => id !== coinId);
-                }
-
-                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
-            });
-        });
-    } 
-    // end code of search bar
 
     // Function to load and display coins
     function loadCoins() {
@@ -234,6 +135,7 @@ $(document).ready(function () {
         // Check if the data is still valid (within the cache duration)
         if (cachedUsdCoins && cachedIlsCoins && cachedEurCoins && now - cachedUsdTimestamp < cacheDuration && now - cachedIlsTimestamp < cacheDuration && now - cachedEurTimestamp < cacheDuration) {
             displayCoins(JSON.parse(cachedUsdCoins), JSON.parse(cachedIlsCoins), JSON.parse(cachedEurCoins));
+            populateSearchDropdown(JSON.parse(cachedUsdCoins)); // Populate the dropdown with the USD coins
         } else {
             // Fetch data from all three APIs
             Promise.all([
@@ -288,31 +190,31 @@ $(document).ready(function () {
             const eurPrice = eurCoins[index]?.current_price || 'N/A';
 
             const coinCard = `
-                    <div class="col-md-3">
-                        <div class="card crypto-card h-100" style="width:100%;height:100%;min-width: 300px;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="left-content d-flex align-items-center">
-                                        <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
-                                        <div style="width:100%;word-wrap:break-word !important;">
-                                            <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
-                                            <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
-                                        </div>
+                <div class="col-md-3">
+                    <div class="card crypto-card h-100" style="width:100%;height:100%;min-width: 300px;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="left-content d-flex align-items-center">
+                                    <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
+                                    <div style="width:100%;word-wrap:break-word !important;">
+                                        <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
+                                        <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
                                     </div>
-                                    <label class="switch" style="min-width: 3.8rem;margin-right:1.5rem;">
-                                        <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
-                                        <span class="slider round"></span>
-                                    </label>
                                 </div>
-                                <div class="text-center mt-3">
-                                    <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
-                                        More Info
-                                    </button>
-                                    <div class="more-info-content mt-3"></div>
-                                </div>
+                                <label class="switch" style="min-width: 3.8rem;margin-right:1.5rem;">
+                                    <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
+                                    More Info
+                                </button>
+                                <div class="more-info-content mt-3"></div>
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                </div>`;
             row.append(coinCard); // Append the coin card to the current row
         });
 
@@ -323,6 +225,7 @@ $(document).ready(function () {
         attachCheckboxListeners();
     }
 
+    // Function to populate the search dropdown
     function populateSearchDropdown(coinsData) {
         const dropdown = document.getElementById('searchDropdown');
         dropdown.innerHTML = ''; // Clear existing options
@@ -337,15 +240,16 @@ $(document).ready(function () {
         attachSearchDropdownListeners();
     }
     
+    // Function to attach listeners to the search dropdown
     function attachSearchDropdownListeners() {
         const searchInput = document.getElementById('searchInput');
         const dropdown = document.getElementById('searchDropdown');
-    
+
         searchInput.addEventListener('input', function () {
             const filter = this.value.toUpperCase();
             const options = dropdown.childNodes;
             let hasVisibleOptions = false;
-    
+
             options.forEach(option => {
                 if (option.textContent.toUpperCase().includes(filter)) {
                     option.style.display = '';
@@ -354,10 +258,20 @@ $(document).ready(function () {
                     option.style.display = 'none';
                 }
             });
-    
-            dropdown.style.display = hasVisibleOptions && this.value.length > 0 ? 'block' : 'none';
+
+            // Show the dropdown if there are visible options and the input is not empty
+            if (hasVisibleOptions && this.value.length > 0) {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
         });
-    
+
+        dropdown.addEventListener('mousedown', function (e) {
+            // Prevent the dropdown from closing when clicking on an option
+            e.preventDefault();
+        });
+
         dropdown.addEventListener('click', function (e) {
             if (e.target.hasAttribute('data-value')) {
                 searchInput.value = e.target.getAttribute('data-value');
@@ -365,20 +279,29 @@ $(document).ready(function () {
                 performExactSearch(); // Perform the search based on the selected value
             }
         });
-    
+
         document.addEventListener('click', function (e) {
             if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
                 dropdown.style.display = 'none';
             }
         });
-    
+
         searchInput.addEventListener('focus', function () {
-            if (this.value.length > 0) {
+            const filter = this.value.toUpperCase();
+            const options = dropdown.childNodes;
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                if (option.textContent.toUpperCase().includes(filter)) {
+                    hasVisibleOptions = true;
+                }
+            });
+
+            if (this.value.length > 0 && hasVisibleOptions) {
                 dropdown.style.display = 'block';
             }
         });
     }
-    
 
     // Function to attach listeners to "More Info" buttons
     function attachMoreInfoListeners() {
@@ -531,16 +454,17 @@ $(document).ready(function () {
         });
     }
 
+    // Function to get the total number of coins (used in performExactSearch)
+    function getTotalCoinsCount() {
+        const usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
+        return usdCoins.length;
+    }
+
     // Initial load of coins
     loadCoins();
 
-    // Optionally, set an interval to refresh coins list every 2 minutes
-    setInterval(loadCoins, cacheDuration);
-    
     // On page load, check checkboxes for selected coins
     selectedCoins.forEach(coinId => {
         $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', true);
     });
-    
-    
 });
