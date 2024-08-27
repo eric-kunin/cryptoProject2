@@ -6,7 +6,7 @@ $(function(){
     const eurApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=eur";
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
     let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || []; // Load selected coins from localStorage
-    let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
+    let chartsCoins = selectedCoins.map(coinId => getCoinSymbolFromId(coinId)); // Synchronize chartsCoins with selectcoins
     let searchDebounceTimer;
 
     $('#currentYear').text(new Date().getFullYear());
@@ -331,49 +331,51 @@ $(function(){
         });
     }
 
+    function displayCoinDetails(infoContent, coinDetails) {
+        const usdPrice = coinDetails.usd ? `$${coinDetails.usd.toLocaleString()}` : 'N/A';
+        const eurPrice = coinDetails.eur ? `€${coinDetails.eur.toLocaleString()}` : 'N/A';
+        const ilsPrice = coinDetails.ils ? `₪${coinDetails.ils.toLocaleString()}` : 'N/A';
+
+        const detailsHtml = `
+            <div class="coin-details">
+                <p><strong>USD:</strong> ${usdPrice}</p>
+                <p><strong>EUR:</strong> ${eurPrice}</p>
+                <p><strong>ILS:</strong> ${ilsPrice}</p>
+            </div>
+        `;
+
+        infoContent.html(detailsHtml);
+    }
+
     function attachCheckboxListeners() {
         $('.coin-checkbox').on('change', function() {
             let coinId = $(this).data('coin-id');
             let coinSymbol = $(this).data('coin-symbol');
+    
             if ($(this).is(':checked')) {
-                if (selectedCoins.length >= 5) {
-                    $(this).prop('checked', false);
+                selectedCoins.push(coinId);
+                chartsCoins.push(coinSymbol);
+    
+                if (selectedCoins.length > 5) {
                     populateModalWithSelectedCoins();
                     $('#maxCoinsModal').modal('show');
                 } else {
-                    selectedCoins.push(coinId);
-                    chartsCoins.push(coinSymbol);
-                    localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
-                    localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
+                    updateLocalStorage();
                 }
             } else {
                 selectedCoins = selectedCoins.filter(id => id !== coinId);
                 chartsCoins = chartsCoins.filter(symbol => symbol !== coinSymbol);
-                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
-                localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
+                updateLocalStorage();
             }
         });
     }
-
-    function displayCoinDetails(element, data) {
-        let usdPrice = data.usd ? data.usd.toLocaleString() : 'N/A';
-        let eurPrice = data.eur ? data.eur.toLocaleString() : 'N/A';
-        let ilsPrice = data.ils ? data.ils.toLocaleString() : 'N/A';
-
-        let detailsHtml = `
-            <p><strong>USD:</strong> $${usdPrice}</p>
-            <p><strong>EUR:</strong> €${eurPrice}</p>
-            <p><strong>ILS:</strong> ₪${ilsPrice}</p>
-        `;
-        element.html(detailsHtml);
-    }
-
+    
     function populateModalWithSelectedCoins() {
         let selectedCoinsList = $('#selectedCoinsContainer');
         selectedCoinsList.empty();
-
+    
         let usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
-
+    
         selectedCoins.forEach(coinId => {
             let coinData = usdCoinsData.find(coin => coin.id === coinId);
             if (coinData) {
@@ -398,33 +400,67 @@ $(function(){
                 selectedCoinsList.append(coinItem);
             }
         });
-
+    
         attachModalCheckboxListeners();
     }
-
+    
     function attachModalCheckboxListeners() {
         $('.modal-coin-checkbox').on('change', function() {
             let coinId = $(this).data('coin-id');
             let coinSymbol = $(this).data('coin-symbol');
+            
             if (!$(this).is(':checked')) {
+                // Remove the coin from selectedCoins and chartsCoins
                 selectedCoins = selectedCoins.filter(id => id !== coinId);
                 chartsCoins = chartsCoins.filter(symbol => symbol !== coinSymbol);
-
                 $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', false);
-
-                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
-                localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
+    
+                updateLocalStorage();
             } else {
-                if (!selectedCoins.includes(coinId)) {
+                // Add the coin to selectedCoins and chartsCoins
+                if (selectedCoins.length < 5) {
                     selectedCoins.push(coinId);
                     chartsCoins.push(coinSymbol);
                     $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', true);
-
-                    localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
-                    localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
+    
+                    updateLocalStorage();
                 }
             }
         });
+    
+        // Handle the modal okay button click
+        $('#modalFooterBtn').on('click', function() {
+            if (selectedCoins.length > 5) {
+                // Automatically uncheck the 6th coin if the user does not deselect one
+                let extraCoinId = selectedCoins[selectedCoins.length - 1];
+                let extraCoinSymbol = chartsCoins[chartsCoins.length - 1];
+    
+                // Slice the arrays to only keep the first 5 coins
+                selectedCoins = selectedCoins.slice(0, 5);
+                chartsCoins = chartsCoins.slice(0, 5);
+    
+                // Uncheck the extra coin in the main UI
+                $(`.coin-checkbox[data-coin-id="${extraCoinId}"]`).prop('checked', false);
+    
+                updateLocalStorage();
+            }
+    
+            $('#maxCoinsModal').modal('hide');
+        });
+    }
+
+    function updateLocalStorage() {
+        // Ensure chartsCoins is synchronized with selectedCoins
+        chartsCoins = selectedCoins.map(coinId => getCoinSymbolFromId(coinId));
+        localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
+        localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
+    }
+
+    function getCoinSymbolFromId(coinId) {
+        // Retrieve the coin symbol based on the coin ID from the stored data
+        let usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
+        let coinData = usdCoinsData.find(coin => coin.id === coinId);
+        return coinData ? coinData.symbol : '';
     }
 
     loadCoins();
