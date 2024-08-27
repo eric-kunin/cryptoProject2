@@ -150,7 +150,7 @@ $(document).ready(function () {
 
                 const coinCard = `
                     <div class="col-md-3">
-                        <div class="card crypto-card h-100" style="width:100%;height:100%;">
+                        <div class="card crypto-card h-100" style="width:100%;height:100%;min-width: 300px;">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="left-content d-flex align-items-center">
@@ -288,31 +288,31 @@ $(document).ready(function () {
             const eurPrice = eurCoins[index]?.current_price || 'N/A';
 
             const coinCard = `
-                <div class="col-md-3">
-                    <div class="card crypto-card h-100" style="width:100%;height:100%;">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="left-content d-flex align-items-center">
-                                    <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
-                                    <div style="width:120px;word-wrap:break-word !important;">
-                                        <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
-                                        <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
+                    <div class="col-md-3">
+                        <div class="card crypto-card h-100" style="width:100%;height:100%;min-width: 300px;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="left-content d-flex align-items-center">
+                                        <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
+                                        <div style="width:100%;word-wrap:break-word !important;">
+                                            <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
+                                            <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
+                                        </div>
                                     </div>
+                                    <label class="switch" style="min-width: 3.8rem;margin-right:1.5rem;">
+                                        <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
+                                        <span class="slider round"></span>
+                                    </label>
                                 </div>
-                                <label class="switch">
-                                    <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="text-center mt-3">
-                                <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
-                                    More Info
-                                </button>
-                                <div class="more-info-content mt-3"></div>
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
+                                        More Info
+                                    </button>
+                                    <div class="more-info-content mt-3"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>`;
+                    </div>`;
             row.append(coinCard); // Append the coin card to the current row
         });
 
