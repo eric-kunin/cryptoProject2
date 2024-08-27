@@ -806,3 +806,44 @@ h2 {
     overflow-y: auto;
     z-index: 1000;
 }
+#chartContainer {
+    height: 400px; 
+    width: 100%;
+}
+#searchResultMessage{
+    color:white; 
+    margin-top: 10px;
+    text-align: center;
+    font-size: 2rem;
+}
+#modalFooterBtn {
+    font-size: 15px;
+}
+.search-container {
+    max-width: 600px;
+}
+.card-img {
+    width: 50px;
+    margin-right: 10px;
+}
+.switch {
+    min-width: 3.8rem;
+    margin-right:1.5rem;
+}
+.card-text {
+    line-height: 1.3;
+}
+.card-title {
+    font-weight: bold; 
+    font-size: 1.25rem; 
+    line-height: 1.3;
+}
+.text-wrap {
+    width:100%;
+    word-wrap:break-word !important;
+}
+.card {
+    width:100%;
+    height:100%;
+    min-width: 300px;
+}

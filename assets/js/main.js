@@ -1,22 +1,38 @@
-$(document).ready(function () {
+$(function(){
+    "use strict";
+
     const usdApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=usd";
     const ilsApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=ils";
     const eurApiUrl = "https://api.coingecko.com/api/v3/coins/markets?order=market_cap_desc&vs_currency=eur";
     const cacheDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
     let selectedCoins = JSON.parse(localStorage.getItem('selectcoins')) || []; // Load selected coins from localStorage
     let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
-    let searchTimer;
+    let searchDebounceTimer;
 
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    $('#currentYear').text(new Date().getFullYear());
 
-    // Call the function after the coins data is loaded and displayed
+    $(window).on('scroll', function() {
+        let navbar = $('#navbar');
+        if ($(this).scrollTop() > 50) {
+            navbar.addClass('navbar-scrolled');
+        } else {
+            navbar.removeClass('navbar-scrolled');
+        }
+    });
+
+    $(window).on('scroll', function() {
+        let video = $('#myVideo');
+        let scrollPosition = $(this).scrollTop();
+        video.css('transform', `translate3d(-50%, -50%, 0) translateY(${scrollPosition * 0.5}px)`);
+    });
+
     loadCoins();
 
-    document.getElementById('searchInput').addEventListener('input', function() {
-        clearTimeout(searchTimer);
+    $('#searchInput').on('input', function() {
+        clearTimeout(searchDebounceTimer);
 
-        if (this.value.trim() === "") {
-            searchTimer = setTimeout(function() {
+        if ($.trim($(this).val()) === "") {
+            searchDebounceTimer = setTimeout(function() {
                 if (typeof loadCoins === 'function') {
                     loadCoins();
                 } else {
@@ -28,53 +44,47 @@ $(document).ready(function () {
         }
     });
 
-    document.querySelector('.btn-outline-success').addEventListener('click', function() {
+    $('.btn-outline-success').on('click', function() {
         performExactSearch();
     });
 
-    document.getElementById('searchInput').addEventListener('keypress', function(event) {
+    $('#searchInput').on('keypress', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
             performExactSearch();
         }
     });
 
-    // Event listener to clear the message when the input is empty
-    document.getElementById('searchInput').addEventListener('input', function() {
-        let input = this.value.trim();
-        let searchResultMessage = document.getElementById('searchResultMessage');
+    $('#searchInput').on('input', function() {
+        let input = $.trim($(this).val());
+        let searchResultMessage = $('#searchResultMessage');
 
         if (input === "") {
-            searchResultMessage.textContent = ""; // Clear message when input is empty
+            searchResultMessage.text(""); // Clear message when input is empty
         }
     });
 
-    // Event listener to handle input changes and update the message accordingly
-    document.getElementById('searchInput').addEventListener('input', function() {
-        let input = this.value.trim().toUpperCase();
-        let searchResultMessage = document.getElementById('searchResultMessage');
+    $('#searchInput').on('input', function() {
+        let input = $.trim($(this).val()).toUpperCase();
+        let searchResultMessage = $('#searchResultMessage');
 
         if (input === "") {
-            // Clear the message when the input is empty
-            searchResultMessage.textContent = "";
-            // Optionally, reload all coins if input is empty
+            searchResultMessage.text(""); // Clear message when input is empty
             if (typeof loadCoins === 'function') {
                 loadCoins();
             } else {
                 console.error('loadCoins is not defined');
             }
         } else {
-            // Perform search or other actions when there is input
             performPartialSearch();
         }
     });
 
-    // Adjust the performPartialSearch function to ensure the message is updated correctly
     function performPartialSearch() {
-        let input = document.getElementById('searchInput').value.trim().toUpperCase();
-        let searchResultMessage = document.getElementById('searchResultMessage');
+        let input = $.trim($('#searchInput').val()).toUpperCase();
+        let searchResultMessage = $('#searchResultMessage');
         if (input === "") {
-            searchResultMessage.textContent = ""; // Clear message when input is empty
+            searchResultMessage.text(""); // Clear message when input is empty
             return;
         }
 
@@ -87,15 +97,14 @@ $(document).ready(function () {
             coin.symbol.toUpperCase().includes(input)
         );
 
-        // Update the message with the number of coins found
-        searchResultMessage.textContent = `Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`;
+        searchResultMessage.text(`Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`);
 
         displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
     }
 
     function performExactSearch() {
-        let searchResultMessage = document.getElementById('searchResultMessage');
-        let input = document.getElementById('searchInput').value.trim().toUpperCase();
+        let searchResultMessage = $('#searchResultMessage');
+        let input = $.trim($('#searchInput').val()).toUpperCase();
 
         if (input === "") {
             if (typeof loadCoins === 'function') {
@@ -103,7 +112,7 @@ $(document).ready(function () {
             } else {
                 console.error('loadCoins is not defined');
             }
-            searchResultMessage.textContent = ""; // Clear message when input is empty
+            searchResultMessage.text(""); // Clear message when input is empty
             return;
         }
 
@@ -116,13 +125,11 @@ $(document).ready(function () {
             coin.symbol.toUpperCase() === input
         );
 
-        // Update the message with the number of coins found
-        searchResultMessage.textContent = `Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`;
+        searchResultMessage.text(`Found ${filteredCoins.length} ${filteredCoins.length > 1 ? "coins" : "coin"}`);
 
         displayCoins(filteredCoins, ilsCoins, eurCoins, selectedCoins);
     }
 
-    // Function to load and display coins
     function loadCoins() {
         const now = new Date().getTime();
         const cachedUsdCoins = localStorage.getItem('usdCoinsData');
@@ -132,23 +139,20 @@ $(document).ready(function () {
         const cachedIlsTimestamp = localStorage.getItem('ilsCoinsTimestamp');
         const cachedEurTimestamp = localStorage.getItem('eurCoinsTimestamp');
 
-        // Check if the data is still valid (within the cache duration)
         if (cachedUsdCoins && cachedIlsCoins && cachedEurCoins && now - cachedUsdTimestamp < cacheDuration && now - cachedIlsTimestamp < cacheDuration && now - cachedEurTimestamp < cacheDuration) {
             displayCoins(JSON.parse(cachedUsdCoins), JSON.parse(cachedIlsCoins), JSON.parse(cachedEurCoins));
             populateSearchDropdown(JSON.parse(cachedUsdCoins)); // Populate the dropdown with the USD coins
         } else {
-            // Fetch data from all three APIs
-            Promise.all([
-                axios.get(usdApiUrl),
-                axios.get(ilsApiUrl),
-                axios.get(eurApiUrl)
-            ])
-            .then(responses => {
-                const usdCoinsData = responses[0].data.slice(0, 100);
-                const ilsCoinsData = responses[1].data.slice(0, 100);
-                const eurCoinsData = responses[2].data.slice(0, 100);
+            $.when(
+                $.get(usdApiUrl),
+                $.get(ilsApiUrl),
+                $.get(eurApiUrl)
+            )
+            .then((usdResponse, ilsResponse, eurResponse) => {
+                const usdCoinsData = usdResponse[0].slice(0, 100);
+                const ilsCoinsData = ilsResponse[0].slice(0, 100);
+                const eurCoinsData = eurResponse[0].slice(0, 100);
 
-                // Save data to local storage
                 localStorage.setItem('usdCoinsData', JSON.stringify(usdCoinsData));
                 localStorage.setItem('ilsCoinsData', JSON.stringify(ilsCoinsData));
                 localStorage.setItem('eurCoinsData', JSON.stringify(eurCoinsData));
@@ -156,33 +160,28 @@ $(document).ready(function () {
                 localStorage.setItem('ilsCoinsTimestamp', now);
                 localStorage.setItem('eurCoinsTimestamp', now);
 
-                // Clear any previous error message
                 $('#errorMessage').hide();
 
                 displayCoins(usdCoinsData, ilsCoinsData, eurCoinsData);
                 populateSearchDropdown(usdCoinsData); // Populate the dropdown with the USD coins
             })
-            .catch(error => {
+            .fail(error => {
                 console.error("Error fetching coins: ", error);
-
-                // Display error message to the user
                 $('#errorMessage').text('Failed to load cryptocurrency data. Please try again later.').show();
             });
         }
     }
 
-    // Function to display coins in the UI
     function displayCoins(usdCoins, ilsCoins, eurCoins) {
-        const coinContainer = $('.main');
-        coinContainer.empty(); // Clear existing content
+        let coinContainer = $('.main');
+        coinContainer.empty();
 
-        let row; // Variable to hold the current row
+        let row;
 
         usdCoins.forEach((coin, index) => {
-            // Create a new row for every 4 coins
             if (index % 4 === 0) {
                 row = $('<div class="row mt-3" id="cryptoCards"></div>');
-                coinContainer.append(row); // Append the new row to the main container
+                coinContainer.append(row);
             }
 
             const usdPrice = coin.current_price || 'N/A';
@@ -191,195 +190,177 @@ $(document).ready(function () {
 
             const coinCard = `
                 <div class="col-md-3">
-                    <div class="card crypto-card h-100" style="width:100%;height:100%;min-width: 300px;">
+                    <div class="card crypto-card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="left-content d-flex align-items-center">
-                                    <img class="card-img" src="${coin.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
-                                    <div style="width:100%;word-wrap:break-word !important;">
-                                        <h4 class="card-title" style="font-weight: bold; font-size: 1.25rem; line-height: 1.3;">${coin.symbol.toUpperCase()}</h4>
-                                        <p class="card-text" style="line-height: 1.3;">${coin.name}</p>
+                                    <img class="card-img" src="${coin.image}" alt="Card image">
+                                    <div class="text-wrap">
+                                        <h4 class="card-title">${coin.symbol.toUpperCase()}</h4>
+                                        <p class="card-text">${coin.name}</p>
                                     </div>
                                 </div>
-                                <label class="switch" style="min-width: 3.8rem;margin-right:1.5rem;">
+                                <label class="switch">
                                     <input type="checkbox" class="coin-checkbox" data-coin-id="${coin.id}" data-coin-symbol="${coin.symbol}" ${selectedCoins.includes(coin.id) ? 'checked' : ''}>
                                     <span class="slider round"></span>
                                 </label>
                             </div>
                             <div class="text-center mt-3">
-                                <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}">
+                                <button class="btn btn-primary more-info-btn" data-coin-id="${coin.id}" data-toggle="collapse">
                                     More Info
                                 </button>
-                                <div class="more-info-content mt-3"></div>
+                                <div class="more-info-content mt-3 collapse"></div>
                             </div>
                         </div>
                     </div>
                 </div>`;
-            row.append(coinCard); // Append the coin card to the current row
+            row.append(coinCard);
         });
 
-        // Attach event listeners to "More Info" buttons
         attachMoreInfoListeners();
-
-        // Attach event listeners to the checkboxes
         attachCheckboxListeners();
     }
 
-    // Function to populate the search dropdown
     function populateSearchDropdown(coinsData) {
-        const dropdown = document.getElementById('searchDropdown');
-        dropdown.innerHTML = ''; // Clear existing options
-    
+        let dropdown = $('#searchDropdown');
+        dropdown.empty();
+
         coinsData.forEach(coin => {
-            const div = document.createElement('div');
-            div.textContent = `${coin.symbol.toUpperCase()} - ${coin.name}`;
-            div.setAttribute('data-value', coin.symbol.toUpperCase());
-            dropdown.appendChild(div);
+            let div = $('<div></div>').text(`${coin.symbol.toUpperCase()} - ${coin.name}`);
+            div.attr('data-value', coin.symbol.toUpperCase());
+            dropdown.append(div);
         });
-    
+
         attachSearchDropdownListeners();
     }
-    
-    // Function to attach listeners to the search dropdown
-    function attachSearchDropdownListeners() {
-        const searchInput = document.getElementById('searchInput');
-        const dropdown = document.getElementById('searchDropdown');
 
-        searchInput.addEventListener('input', function () {
-            const filter = this.value.toUpperCase();
-            const options = dropdown.childNodes;
+    function attachSearchDropdownListeners() {
+        let searchInput = $('#searchInput');
+        let dropdown = $('#searchDropdown');
+
+        searchInput.on('input', function() {
+            let filter = $(this).val().toUpperCase();
+            let options = dropdown.children();
             let hasVisibleOptions = false;
 
-            options.forEach(option => {
-                if (option.textContent.toUpperCase().includes(filter)) {
-                    option.style.display = '';
+            options.each(function() {
+                if ($(this).text().toUpperCase().includes(filter)) {
+                    $(this).show();
                     hasVisibleOptions = true;
                 } else {
-                    option.style.display = 'none';
+                    $(this).hide();
                 }
             });
 
-            // Show the dropdown if there are visible options and the input is not empty
-            if (hasVisibleOptions && this.value.length > 0) {
-                dropdown.style.display = 'block';
+            if (hasVisibleOptions && $(this).val().length > 0) {
+                dropdown.show();
             } else {
-                dropdown.style.display = 'none';
+                dropdown.hide();
             }
         });
 
-        dropdown.addEventListener('mousedown', function (e) {
-            // Prevent the dropdown from closing when clicking on an option
-            e.preventDefault();
+        dropdown.on('mousedown', function(event) {
+            event.preventDefault();
         });
 
-        dropdown.addEventListener('click', function (e) {
-            if (e.target.hasAttribute('data-value')) {
-                searchInput.value = e.target.getAttribute('data-value');
-                dropdown.style.display = 'none';
-                performExactSearch(); // Perform the search based on the selected value
+        dropdown.on('click', function(event) {
+            if ($(event.target).attr('data-value')) {
+                searchInput.val($(event.target).attr('data-value'));
+                dropdown.hide();
+                performExactSearch();
             }
         });
 
-        document.addEventListener('click', function (e) {
-            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.style.display = 'none';
+        $(document).on('click', function(event) {
+            if (!searchInput.is(event.target) && !dropdown.is(event.target)) {
+                dropdown.hide();
             }
         });
 
-        searchInput.addEventListener('focus', function () {
-            const filter = this.value.toUpperCase();
-            const options = dropdown.childNodes;
+        searchInput.on('focus', function() {
+            let filter = $(this).val().toUpperCase();
+            let options = dropdown.children();
             let hasVisibleOptions = false;
 
-            options.forEach(option => {
-                if (option.textContent.toUpperCase().includes(filter)) {
+            options.each(function() {
+                if ($(this).text().toUpperCase().includes(filter)) {
                     hasVisibleOptions = true;
                 }
             });
 
-            if (this.value.length > 0 && hasVisibleOptions) {
-                dropdown.style.display = 'block';
+            if ($(this).val().length > 0 && hasVisibleOptions) {
+                dropdown.show();
             }
         });
     }
 
-    // Function to attach listeners to "More Info" buttons
     function attachMoreInfoListeners() {
-        $('.more-info-btn').on('click', function () {
-            const coinId = $(this).data('coin-id');
-            const infoContent = $(this).next('.more-info-content');
-            
-            // Toggle the visibility of the info content
+        $('.more-info-btn').on('click', function() {
+            let coinId = $(this).data('coin-id');
+            let infoContent = $(this).next('.more-info-content');
+
             if (infoContent.is(':visible')) {
                 infoContent.slideUp();
-                $(this).html('More Info');
+                $(this).text('More Info');
             } else {
-                // Show the spinner loader while data is being fetched
-                $(this).html(`More Info <span class="spinner-border spinner-border-sm"></span>`);
-                
-                // Simulate an asynchronous operation for fetching the data from localStorage
+                $(this).html('More Info <span class="spinner-border spinner-border-sm"></span>');
+
                 setTimeout(() => {
-                    // Load data from localStorage
-                    const usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
-                    const ilsCoinsData = JSON.parse(localStorage.getItem('ilsCoinsData'));
-                    const eurCoinsData = JSON.parse(localStorage.getItem('eurCoinsData'));
-                    
-                    const usdData = usdCoinsData.find(c => c.id === coinId);
-                    const ilsData = ilsCoinsData.find(c => c.id === coinId);
-                    const eurData = eurCoinsData.find(c => c.id === coinId);
-                    
-                    const coinDetails = {
+                    let usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
+                    let ilsCoinsData = JSON.parse(localStorage.getItem('ilsCoinsData'));
+                    let eurCoinsData = JSON.parse(localStorage.getItem('eurCoinsData'));
+
+                    let usdData = usdCoinsData.find(c => c.id === coinId);
+                    let ilsData = ilsCoinsData.find(c => c.id === coinId);
+                    let eurData = eurCoinsData.find(c => c.id === coinId);
+
+                    let coinDetails = {
                         usd: usdData.current_price,
                         ils: ilsData.current_price,
                         eur: eurData.current_price,
                         image: usdData.image,
                         name: usdData.name
                     };
-                    
+
                     displayCoinDetails(infoContent, coinDetails);
-                    
-                    // Show the info content
+
                     infoContent.slideDown();
-                    
-                    // Reset button text after loading data
-                    $(this).html('Less Info');
-                }, 500); // Simulated delay to show the spinner (0.5 seconds)
+                    $(this).text('Less Info');
+                }, 500);
             }
         });
     }
 
-    // Function to attach listeners to checkboxes
     function attachCheckboxListeners() {
-        $('.coin-checkbox').on('change', function () {
-            const coinId = $(this).data('coin-id');
-            const coinSymbol = $(this).data('coin-symbol');
+        $('.coin-checkbox').on('change', function() {
+            let coinId = $(this).data('coin-id');
+            let coinSymbol = $(this).data('coin-symbol');
             if ($(this).is(':checked')) {
                 if (selectedCoins.length >= 5) {
                     $(this).prop('checked', false);
-                    populateModalWithSelectedCoins(); // Populate modal with selected coins
-                    $('#maxCoinsModal').modal('show'); // Show modal if more than 5 coins are selected
+                    populateModalWithSelectedCoins();
+                    $('#maxCoinsModal').modal('show');
                 } else {
                     selectedCoins.push(coinId);
                     chartsCoins.push(coinSymbol);
-                    localStorage.setItem('selectcoins', JSON.stringify(selectedCoins)); // Save selected coins to localStorage
-                    localStorage.setItem('chartscoins', JSON.stringify(chartsCoins)); // Save selected coin symbols to localStorage
+                    localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
+                    localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
                 }
             } else {
                 selectedCoins = selectedCoins.filter(id => id !== coinId);
                 chartsCoins = chartsCoins.filter(symbol => symbol !== coinSymbol);
-                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins)); // Save updated selected coins to localStorage
-                localStorage.setItem('chartscoins', JSON.stringify(chartsCoins)); // Save updated coin symbols to localStorage
+                localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
+                localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
             }
         });
     }
 
-    // Function to display coin details
     function displayCoinDetails(element, data) {
-        const usdPrice = data.usd || 'N/A';
-        const eurPrice = data.eur || 'N/A';
-        const ilsPrice = data.ils || 'N/A';
+        let usdPrice = data.usd ? data.usd.toLocaleString() : 'N/A';
+        let eurPrice = data.eur ? data.eur.toLocaleString() : 'N/A';
+        let ilsPrice = data.ils ? data.ils.toLocaleString() : 'N/A';
 
-        const detailsHtml = `
+        let detailsHtml = `
             <p><strong>USD:</strong> $${usdPrice}</p>
             <p><strong>EUR:</strong> €${eurPrice}</p>
             <p><strong>ILS:</strong> ₪${ilsPrice}</p>
@@ -387,22 +368,21 @@ $(document).ready(function () {
         element.html(detailsHtml);
     }
 
-    // Function to populate the modal with selected coins
     function populateModalWithSelectedCoins() {
-        const selectedCoinsList = $('#selectedCoinsContainer');
+        let selectedCoinsList = $('#selectedCoinsContainer');
         selectedCoinsList.empty();
 
-        const usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
+        let usdCoinsData = JSON.parse(localStorage.getItem('usdCoinsData'));
 
         selectedCoins.forEach(coinId => {
-            const coinData = usdCoinsData.find(coin => coin.id === coinId);
+            let coinData = usdCoinsData.find(coin => coin.id === coinId);
             if (coinData) {
-                const coinItem = `
+                let coinItem = `
                     <div class="card mb-2">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="left-content d-flex align-items-center">
-                                    <img class="card-img" src="${coinData.image}" alt="Card image" style="width: 50px;margin-right: 10px;">
+                                    <img class="card-img" src="${coinData.image}" alt="Card image">
                                     <div>
                                         <h4 class="card-title">${coinData.symbol.toUpperCase()}</h4>
                                         <p class="card-text">${coinData.name}</p>
@@ -419,34 +399,27 @@ $(document).ready(function () {
             }
         });
 
-        // Attach listeners to modal checkboxes for deselection
         attachModalCheckboxListeners();
     }
 
-    // Function to attach listeners to modal checkboxes
     function attachModalCheckboxListeners() {
-        $('.modal-coin-checkbox').on('change', function () {
-            const coinId = $(this).data('coin-id');
-            const coinSymbol = $(this).data('coin-symbol');
+        $('.modal-coin-checkbox').on('change', function() {
+            let coinId = $(this).data('coin-id');
+            let coinSymbol = $(this).data('coin-symbol');
             if (!$(this).is(':checked')) {
-                // Remove coin from selected coins
                 selectedCoins = selectedCoins.filter(id => id !== coinId);
                 chartsCoins = chartsCoins.filter(symbol => symbol !== coinSymbol);
 
-                // Uncheck the corresponding checkbox in the main list
-                $('.coin-checkbox[data-coin-id="' + coinId + '"]').prop('checked', false);
+                $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', false);
 
-                // Save updated selected coins to localStorage
                 localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
                 localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
             } else {
-                // Re-select the coin if the switch is checked again
                 if (!selectedCoins.includes(coinId)) {
                     selectedCoins.push(coinId);
                     chartsCoins.push(coinSymbol);
-                    $('.coin-checkbox[data-coin-id="' + coinId + '"]').prop('checked', true);
+                    $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', true);
 
-                    // Save updated selected coins to localStorage
                     localStorage.setItem('selectcoins', JSON.stringify(selectedCoins));
                     localStorage.setItem('chartscoins', JSON.stringify(chartsCoins));
                 }
@@ -454,16 +427,8 @@ $(document).ready(function () {
         });
     }
 
-    // Function to get the total number of coins (used in performExactSearch)
-    function getTotalCoinsCount() {
-        const usdCoins = JSON.parse(localStorage.getItem('usdCoinsData')) || [];
-        return usdCoins.length;
-    }
-
-    // Initial load of coins
     loadCoins();
 
-    // On page load, check checkboxes for selected coins
     selectedCoins.forEach(coinId => {
         $(`.coin-checkbox[data-coin-id="${coinId}"]`).prop('checked', true);
     });

@@ -1,6 +1,24 @@
-$(document).ready(function () {
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
-    let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || []; // Load charts coins from localStorage
+$(function() {
+    "use strict";
+
+    $(window).on('scroll', function() {
+        let navbar = $('#navbar');
+        if ($(this).scrollTop() > 50) {
+            navbar.addClass('navbar-scrolled');
+        } else {
+            navbar.removeClass('navbar-scrolled');
+        }
+    });
+
+    $(window).on('scroll', function() {
+        let video = $('#myVideo');
+        let scrollPosition = $(this).scrollTop();
+        video.css('transform', `translate3d(-50%, -50%, 0) translateY(${scrollPosition * 0.5}px)`);
+    });
+
+    $('#currentYear').text(new Date().getFullYear());
+
+    let chartsCoins = JSON.parse(localStorage.getItem('chartscoins')) || [];
     const dataPoints = {};
 
     if (chartsCoins.length === 0) {
@@ -8,7 +26,6 @@ $(document).ready(function () {
         return;
     }
 
-    // Initialize dataPoints for each selected coin
     chartsCoins.forEach(coin => {
         dataPoints[coin] = [];
     });
@@ -19,7 +36,7 @@ $(document).ready(function () {
         name: coin.toUpperCase(),
         markerType: "square",
         xValueFormatString: "HH:mm:ss",
-        yValueFormatString: "#,##0.0000", // Format for 4 decimal places
+        yValueFormatString: "#,##0.0000",
         dataPoints: dataPoints[coin]
     }));
 
@@ -35,7 +52,7 @@ $(document).ready(function () {
         axisY: {
             title: "Coin Value",
             minimum: 0,
-            includeZero: false,
+            includeZero: false
         },
         toolTip: {
             shared: true,
@@ -43,8 +60,8 @@ $(document).ready(function () {
         },
         legend: {
             cursor: "pointer",
-            verticalAlign: "top", // Position the legend at the top
-            horizontalAlign: "center", // Center the legend
+            verticalAlign: "top",
+            horizontalAlign: "center",
             dockInsidePlotArea: true,
             itemclick: toggleDataSeries
         },
@@ -53,12 +70,9 @@ $(document).ready(function () {
 
     chart.render();
 
-    function toggleDataSeries(e) {
-        if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-            e.dataSeries.visible = false;
-        } else {
-            e.dataSeries.visible = true;
-        }
+    function toggleDataSeries(event) {
+        event.dataSeries.visible = typeof event.dataSeries.visible === "undefined" || event.dataSeries.visible;
+        event.dataSeries.visible = !event.dataSeries.visible;
         chart.render();
     }
 
@@ -72,7 +86,6 @@ $(document).ready(function () {
                 chartsCoins.forEach(coin => {
                     const price = data[coin.toUpperCase()].USD;
 
-                    // Format the price to 4 decimal places
                     const formattedPrice = price.toFixed(4);
 
                     dataPoints[coin].push({ x: time, y: parseFloat(formattedPrice) });
@@ -89,6 +102,6 @@ $(document).ready(function () {
         }
     }
 
-    fetchData();  // Fetch initial data
-    setInterval(fetchData, 2000);  // Fetch data every 2 seconds
+    fetchData(); // Fetch initial data
+    setInterval(fetchData, 2000); // Fetch data every 2 seconds
 });
